@@ -1,0 +1,61 @@
+{% extends 'fedora_utilities/base.html' %}
+
+{% block head_title %}
+ Fedora 3.8 App
+{% endblock %}
+
+{% block more_css %}
+<style media="screen" type="text/css">
+ ul.fedora-batch-nav {
+   background-color: rgb(209,208,208);
+   border-radius: 5px;
+   -webkit-border-radius: 5px;
+   -moz-border-radius: 5px;
+   padding: .5em;
+   width: 12%;
+ }
+
+</style>
+{% endblock %}
+
+
+{% block body %}
+ {# START row-fluid DIV #}
+ <div class="row" id="first-container" class="container" style="padding-top: 40px">
+  {# START fedora batch nav DIV #}
+  <div class="col-sm-3 col-md-2">
+   <ul class="nav nav-stacked nav-pills" >
+    <li {% if request.path.startswith('add_stub') %} class="active"{% endif %}
+      <i class="icon-chevron-right pull-right"></i>
+       <a href="{{ url_for('add_stub') }}">Add Fedora Objects from Template</a>
+    </li>
+    <li>
+        <a href="{{ url_for('index_repository') }}">Index repository</a>
+    </li>
+   </ul>
+  {# END fedora batch nav DIV #}
+  </div>
+   {# START views DIV #}
+   <div class="col-sm-8 col-md-7">
+   
+   <div> 
+   <h1>Fedora 3.8 Utilities</h1>
+    {% if message %}
+     <div class="alert">
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+      {% autoescape off %}
+      <h3>{{ message }}</h3>
+      {% endautoescape %}
+     </div>
+    {% else %}
+	 <p>Original code migrated from Aristotle Library Apps project to Flask-based
+         application in the Colorado College's Catalog Pull Platform.</p>
+    {% endif %}
+   </div>
+   {% block fedora_form %}{% endblock %}
+  {# END views DIV #}
+  </div>
+
+ {# END row-fluid DIV #}
+ </div>
+{% endblock %}
