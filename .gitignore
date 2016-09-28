@@ -1,1 +1,3 @@
 *.swp
+instance*
+__pycache__*

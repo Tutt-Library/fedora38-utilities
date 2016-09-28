@@ -8,16 +8,19 @@ import mimetypes
 import os
 import requests
 import shutil
+import urllib.parse
 import xml.etree.ElementTree as etree
 
 from jinja2 import Environment, FileSystemLoader
 
+from app import app
+
 JINJA_ENV = Environment(loader=FileSystemLoader(
     os.path.dirname(os.path.abspath(__file__))))
 
-MODS_NS = {"mods": 'http://www.loc.gov/mods/v3'}
-
-
+DEFAULT_NS = {
+    "fedora_manage": "http://www.fedora.info/definitions/1/0/management/",
+    "mods": 'http://www.loc.gov/mods/v3'}
 
 def create_mods(form):
     mods_context = {'dateCreated': [],
@@ -26,6 +29,7 @@ def create_mods(form):
                       'corporate_contributors': [],
                       'creators': [],
                       'corporate_creators': [],
+                      'genre': form.get('genre'),
                       'organizations': [],
                       'schema_type': 'CreativeWork', # Default,
                       'subject_people': [],
@@ -43,11 +47,14 @@ def create_mods(form):
         mods_context['corporate_contributors'].append(row)
     for row in form.getlist('subject_people'):
         mods_context['subject_people'].append(row)
-    #__process_form_list__('subject_places', request, mods_context)
-    #__process_form_list__('organizations', request, mods_context)
-    #__process_form_list__('subject_topics', request, mods_context)
-    #__process_form_list__('genre', request, mods_context)
-    #__process_form_free_text__('genre', request, mods_context)
+    for row in form.getlist('organizations'):
+        mods_context['organizations'].append(row)
+    for row in form.getlist('subject_people'):
+        mods_context['subject_people'].append(row)
+    for row in form.getlist('subject_topics'):
+        mods_context['subject_topics'].append(row)
+    if len(form.get('genre')) > 0:
+        mods_context['genre'] = form.get('genre')
     #if len(admin_note) > 0:
     #    mods_context['admin_note'] = admin_note
     #description = add_obj_template_form.cleaned_data[
@@ -125,6 +132,18 @@ def handle_uploaded_zip(file_request,parent_pid):
     #os.remove(zip_contents)
     return statuses
 
+def __new_pid__():
+    pid_result = requests.post(
+        "{0}nextPID?format=xml".format(app.config.FEDORA_URL),
+         auth=(app.config.FEDORA_USER, app.config.FEDORA_PWD))
+    if pid_result.status_code > 399:
+        raise ValueError("Could not retrieve nextPID, HTTP Code {}".format(
+            pid_result.status_code))
+    pid_doc = etree.XML(pid_result.text)
+    pid = pid_doc.find("fedora_manager:pid", DEFAULT_NS)
+    if pid is not None:
+        return pid.text
+
 def create_stubs(mods_xml,
                  title,
                  parent_pid,
@@ -140,30 +159,47 @@ def create_stubs(mods_xml,
     content_model -- Content model for the stub records, defaults to
                      compound object
     """
+    auth = (app.config.FEDORA_USER, app.config.FEDORA_PWD)
     for i in xrange(0, int(num_objects)):
-        # Sets Stub Record Title
-        repository.api.modifyObject(pid=new_pid,
-                                    label=title,
-                                    ownerId=settings.FEDORA_USER,
-                                    state="A")
+        new_pid = __new_pid__()
+        # Add a label to new PID using the title
+        params = urllib.parse.urlencode({"label": title})
+        add_label_url = "{0}{1}?{2}".format(
+            app.config.FEDORA_URL,
+            pid,
+            params)
+        add_label_result = requests.put(add_label_url,
+            auth=auth)
         # Adds MODS datastream to the new object
-        repository.api.addDatastream(pid=new_pid,
-                                     dsID="MODS",
-                                     dsLabel="MODS",
-                                     mimeType="text/xml",
-                                     content=mods_xml)
+        params = urllib.parse.urlencode({
+            "controlGroup": "M",
+            "dsLabel": "MODS",
+            "mimeType": "text/xml"})
+        new_mods_url = "{0}{1}/datastreams/MODS?{2}".format(
+            app.config.FEDORA_URL,
+            pid,
+            params)
+        mods_ds_result = requests.post(new_mods_url,
+            data=mods_xml,
+            auth=auth)
         # Add RELS-EXT datastream
-        rels_ext_template = Template(RELS_EXT)
-        rels_ext_context = Context({'object_pid':new_pid,
-                                    'content_model':content_model,
-                                    'parent_pid':parent_pid})
-        rels_ext = rels_ext_template.render(rels_ext_context)
-        repository.api.addDatastream(pid=new_pid,
-                                     dsID="RELS-EXT",
-                                     dsLabel="RELS-EXT",
-                                     mimeType="application/rdf+xml",
-                                     content=rels_ext)
-        print("New pid is {0}".format(new_pid))
+        rels_ext_template = JINJA_ENV.get_template(
+            'templates/fedora_utilities/rels-ext.xml')
+        rels_ext_context = {'object_pid':new_pid,
+                            'content_model':content_model,
+                            'parent_pid':parent_pid}
+        rels_ext = rels_ext_template.render(**rels_ext_context)
+        params = urllib.parse.urlencode({
+            "controlGroup": "M",
+            "dsLabel": "RELS-EXT",
+            "mimeType": "application/rdf+xml"})
+        rels_url = "{0}{1}/RELS-EXT?{2}".format(
+            app.config.FEDORA_URL,
+            new_pid,
+            params)
+        rels_result = requests.post(rels_url,
+            auth=auth)
+        
     return True
 
 
