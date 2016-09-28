@@ -4,13 +4,111 @@ from flask_wtf import Form
 from wtforms import SelectField, StringField, TextAreaField
 from wtforms import validators
 
-DIGITAL_ORIGIN = [(1, 'born digital'),
-                  (2, 'reformatted digital'),
-                  (3, 'digitized microfilm'),
-                  (4, 'digitized other analog')]
+DIGITAL_ORIGIN = [('1', 'born digital'),
+                  ('2', 'reformatted digital'),
+                  ('3', 'digitized microfilm'),
+                  ('4', 'digitized other analog')]
 
 
-GENRE = [('choose', 'Choose...')]
+GENRE = [('choose', 'Choose...'),
+         ("abstract or summary", "Abstract Or Summary"),
+         ("art original", "Art Original"),
+         ("art reproduction", "Art Reproduction"),
+         ("article", "Article"),
+         ("atlas", "Atlas"),
+         ("autobiography ", "Autobiography "),
+         ("bibliography", "Bibliography"),
+         ("biography", "Biography"),
+         ("book ", "Book "),
+         ("calendar", "Calendar"),
+         ("catalog", "Catalog"),
+         ("chart", "Chart"),
+         ("comic or graphic novel ", "Comic Or Graphic Novel "),
+         ("comic strip", "Comic Strip"),
+         ("conference publication", "Conference Publication"),
+         ("database", "Database"),
+         ("dictionary", "Dictionary"),
+         ("diorama", "Diorama"),
+         ("directory", "Directory"),
+         ("discography", "Discography"),
+         ("drama", "Drama"),
+         ("encyclopedia", "Encyclopedia"),
+         ("essay", "Essay"),
+         ("festschrift", "Festschrift"),
+         ("fiction", "Fiction"),
+         ("filmography", "Filmography"),
+         ("filmstrip", "Filmstrip"),
+         ("finding aid ", "Finding Aid "),
+         ("flash card", "Flash Card"),
+         ("folktale ", "Folktale "),
+         ("font", "Font"),
+         ("game", "Game"),
+         ("government publication ", "Government Publication "),
+         ("graphic", "Graphic"),
+         ("globe", "Globe"),
+         ("handbook", "Handbook"),
+         ("history ", "History "),
+         ("hymnal", "Hymnal"),
+         ("humor, satire", "Humor, Satire"),
+         ("index", "Index"),
+         ("instruction ", "Instruction "),
+         ("interview ", "Interview "),
+         ("issue", "Issue"),
+         ("journal", "Journal"),
+         ("kit", "Kit"),
+         ("language instruction", "Language Instruction"),
+         ("law report or digest", "Law Report Or Digest"),
+         ("legal article", "Legal Article"),
+         ("legal case and case notes", "Legal Case And Case Notes"),
+         ("legislation", "Legislation"),
+         ("letter ", "Letter "),
+         ("loose-leaf ", "Loose-Leaf "),
+         ("map", "Map"),
+         ("memoir ", "Memoir "),
+         ("microscope slide", "Microscope Slide"),
+         ("model", "Model"),
+         ("motion picture", "Motion Picture"),
+         ("multivolume monograph", "Multivolume Monograph"),
+         ("newspaper", "Newspaper"),
+         ("novel ", "Novel "),
+         ("numeric data", "Numeric Data"),
+         ("offprint", "Offprint"),
+         ("online system or service", "Online System Or Service"),
+         ("patent", "Patent"),
+         ("periodical", "Periodical"),
+         ("picture", "Picture"),
+         ("poetry ", "Poetry "),
+         ("programmed text", "Programmed Text"),
+         ("realia", "Realia"),
+         ("rehearsal ", "Rehearsal "),
+         ("remote sensing image", "Remote Sensing Image"),
+         ("reporting ", "Reporting "),
+         ("review", "Review"),
+         ("script", "Script"),
+         ("series", "Series"),
+         ("short story", "Short Story"),
+         ("slide", "Slide"),
+         ("sound ", "Sound "),
+         ("speech", "Speech"),
+         ("standard or specification", "Standard Or Specification"),
+         ("statistics", "Statistics"),
+         ("survey of literature", "Survey Of Literature"),
+         ("technical drawing", "Technical Drawing"),
+         ("technical report", "Technical Report"),
+         ("thesis", "Thesis"),
+         ("toy", "Toy"),
+         ("transparency", "Transparency"),
+         ("treaty", "Treaty"),
+         ("videorecording ", "Videorecording "),
+         ("web site", "Web Site"),
+         ("yearbook", "Yearbook")]
+         
+
+CONTENT_MODELS = [('sp_basic_image', 'Basic Image Content Model'),
+                  ('sp_pdf', 'PDF Content Model'),
+                  ('compoundCModel', 'Compound Object Content Model'),
+                  ('sp-audioCModel', 'Audio Content Model'),
+                  ('sp_videoCModel', 'Video Content Model')]
 
 INSTITUTION_NAME = 'Colorado College'
 
@@ -31,12 +129,6 @@ MARC_FREQUENCY = [('choose', 'Choose...'),
                   ('Triennial', 'Triennial - every 3 years'),
                   ('Completely irregular', 'Completely irregular')]
 
-OBJECT_TEMPLATES = [(0, 'Choose model'),
-                    (1, 'Meeting Minutes'),
-                    (2, 'Newsletter'),
-                    (3, 'Podcast'),
-                    (4, 'Video'),
-                    (5, 'Master (All fields)')]
 
 RIGHTS_STATEMENT = "Copyright restrictions apply. Contact Colorado College for permission to publish."
 PLACE = 'Colorado Springs (Colo.)'
@@ -49,6 +141,9 @@ class AddFedoraObjectFromTemplate(Form):
     alt_title = StringField('Alternative Title')
     collection_pid = StringField("PID of Parent Collection",
         validators=[validators.required(), validators.length(max=20)])
+    content_models = SelectField('Islandora Content Model',
+                                  choices=CONTENT_MODELS,
+                                  default='compoundCModel')
     contributors = StringField("Contributors")
     corporate_contributors = StringField("Corporate Contributors")
     corporate_creators = StringField("Corporate Creators")
@@ -67,11 +162,9 @@ class AddFedoraObjectFromTemplate(Form):
     frequency = SelectField('Frequency',
         choices=MARC_FREQUENCY)
     genre = SelectField('Genre',
-        choices=[])
+        choices=GENRE)
     genre_free_form = StringField('Other')
     number_objects = StringField('Number of stub records', default=1)
-    object_template = SelectField('Content Model Template',
-                                  choices=OBJECT_TEMPLATES)
     organizations = StringField("Organizations",
                                 validators=[validators.optional(), 
                                             validators.length(max=255)],

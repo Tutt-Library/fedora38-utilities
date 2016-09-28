@@ -4,8 +4,8 @@
 __author__ = "Jeremy Nelson"
 
 from flask import Flask, render_template, request
-
 from forms import AddFedoraObjectFromTemplate
+from helpers import create_mods, create_stubs
 
 app = Flask(__name__, instance_relative_config=True)
 
@@ -16,9 +16,14 @@ def default():
 @app.route("/add_stub", methods=["GET", "POST"])
 def add_stub():
     ingest_form = AddFedoraObjectFromTemplate(csrf_enabled=False)
-    if request.method.startswith("POST"):
-        if ingest_form.validate_on_submit():
-            return "Ingest form {}".format(ingest_form.validate())
+    if ingest_form.validate_on_submit():
+        mods_xml = create_mods(request.form)
+        pids = create_stubs(mods_xml,
+            request.form.get('title'),
+            request.form.get('parent_collection'),
+            request.form.get('number_objects'),
+            request.form.get('content_models'))
+        return "Ingest form {}".format(mods_xml)
     return render_template('fedora_utilities/batch-ingest.html',
         ingest_form=ingest_form)
 

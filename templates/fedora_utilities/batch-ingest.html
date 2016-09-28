@@ -15,11 +15,15 @@
                         {{ ingest_form.collection_pid.label }}
                         {{ ingest_form.collection_pid(class_='form-control') }}
                     </div>
-                </section>
-                <section class="col-md-6">
                     <div class="form-group">
                         {{ ingest_form.number_objects.label }}
                         {{ ingest_form.number_objects(class_='form-control') }}
+                    </div>
+                </section>
+                <section class="col-md-6">
+                    <div class="form-group">
+                        {{ ingest_form.content_models.label }}
+                        {{ ingest_form.content_models(class_='form-control') }}
                     </div>
                 </section>
             </div>
@@ -124,7 +128,7 @@
                         {{ ingest_form.frequency.label }}
                         {{ ingest_form.frequency(class_='form-control') }}
                         <strong>OR</strong><br>
-                        {{ ingest_form.frequency_free_form }}
+                        {{ ingest_form.frequency_free_form(class_='form-control')}}
                     </div>
                 </section>
             </div>
@@ -162,7 +166,7 @@
                 </section>
             </div>
          <div class="btn-group">
-            <input type="submit" value="Add Stub Record(s)" class="form-control"></input>
+            <input type="submit" value="Add Stub Record(s)" class="btn btn-lg btn-primary"></input>
          </div>
 	</form>
    </div>
