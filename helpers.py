@@ -13,7 +13,6 @@ import xml.etree.ElementTree as etree
 
 from jinja2 import Environment, FileSystemLoader
 
-from app import app
 
 JINJA_ENV = Environment(loader=FileSystemLoader(
     os.path.dirname(os.path.abspath(__file__))))
@@ -340,7 +339,5 @@ def extract_title(mods_xml):
                 title_entities.append(output)
     return title_entities
 
-
-
-
+from app import app
 

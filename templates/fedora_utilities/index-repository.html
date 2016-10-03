@@ -1,0 +1,17 @@
+{% extends 'fedora_utilities/app.html' %}
+
+{% block fedora_form %}
+<div class="jumbotron">
+    <h2>Index Repository</h2>
+    <p>Index Fedora repository into Elastic Search</p>
+    <form method="POST" action="{{ url_for('index_repository') }}">
+        <div class="form-group">
+            {{ index_form.index_choice.label }}
+            {{ index_form.index_choice(class_="form-control") }} 
+        </div>
+        <div class="form-group">
+            <button class="btn btn-primary" type="submit">Run Index</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -4,10 +4,10 @@ from flask_wtf import Form
 from wtforms import SelectField, StringField, TextAreaField
 from wtforms import validators
 
-DIGITAL_ORIGIN = [('born digital'),
-                  ('reformatted digital'),
-                  ('digitized microfilm'),
-                  ('digitized other analog')]
+DIGITAL_ORIGIN = [('born digital','born digital'),
+                  ('reformatted digital', 'reformatted digital'),
+                  ('digitized microfilm', 'digitized microfilm'),
+                  ('digitized other analog', 'digitized other analog')]
 
 
 GENRE = [('choose', 'Choose...'),
@@ -178,3 +178,7 @@ class AddFedoraObjectFromTemplate(Form):
     title = StringField('Title',
             validators=[validators.length(max=120), validators.optional()])
     type_of_resource = StringField('Type of Resource')
+
+class IndexRepositoryForm(Form):
+    index_choice = SelectField('Incremental or Full',
+        choices=[('0', 'Incremental'),( '1', 'Full')])
