@@ -22,6 +22,14 @@ DEFAULT_NS = {
     "mods": 'http://www.loc.gov/mods/v3'}
 
 def create_mods(form):
+    """Creates a MODS xml document based on form values
+
+    Args:
+        form(flask.request.form): Form
+    
+    Returns:
+        str: Raw XML string of MODS document
+    """ 
     mods_context = {'dateCreated': [],
         'digital_origin': form.get('digital_origin'),
                       'contributors': [],
@@ -133,13 +141,13 @@ def handle_uploaded_zip(file_request,parent_pid):
 
 def __new_pid__():
     pid_result = requests.post(
-        "{0}nextPID?format=xml".format(app.config.FEDORA_URL),
-         auth=(app.config.FEDORA_USER, app.config.FEDORA_PWD))
+        "{0}nextPID?format=xml&namespace=coccc".format(app.config.get('FEDORA_URL')),
+         auth=app.config.get('FEDORA_AUTH'))
     if pid_result.status_code > 399:
         raise ValueError("Could not retrieve nextPID, HTTP Code {}".format(
             pid_result.status_code))
     pid_doc = etree.XML(pid_result.text)
-    pid = pid_doc.find("fedora_manager:pid", DEFAULT_NS)
+    pid = pid_doc.find("fedora_manage:pid", DEFAULT_NS)
     if pid is not None:
         return pid.text
 
@@ -158,14 +166,14 @@ def create_stubs(mods_xml,
     content_model -- Content model for the stub records, defaults to
                      compound object
     """
-    auth = (app.config.FEDORA_USER, app.config.FEDORA_PWD)
-    for i in xrange(0, int(num_objects)):
+    auth = app.config.get('FEDORA_AUTH')
+    for i in range(0, int(num_objects)):
         new_pid = __new_pid__()
         # Add a label to new PID using the title
         params = urllib.parse.urlencode({"label": title})
         add_label_url = "{0}{1}?{2}".format(
-            app.config.FEDORA_URL,
-            pid,
+            app.config.get('FEDORA_URL'),
+            new_pid,
             params)
         add_label_result = requests.put(add_label_url,
             auth=auth)
@@ -175,8 +183,8 @@ def create_stubs(mods_xml,
             "dsLabel": "MODS",
             "mimeType": "text/xml"})
         new_mods_url = "{0}{1}/datastreams/MODS?{2}".format(
-            app.config.FEDORA_URL,
-            pid,
+            app.config.get('FEDORA_URL'),
+            new_pid,
             params)
         mods_ds_result = requests.post(new_mods_url,
             data=mods_xml,
@@ -193,68 +201,13 @@ def create_stubs(mods_xml,
             "dsLabel": "RELS-EXT",
             "mimeType": "application/rdf+xml"})
         rels_url = "{0}{1}/RELS-EXT?{2}".format(
-            app.config.FEDORA_URL,
+            app.config.get('FEDORA_URL'),
             new_pid,
             params)
         rels_result = requests.post(rels_url,
+            data=rels_ext,
             auth=auth)
-        
     return True
-
-
-
-
-
-def ingest_folder(file_path,
-                  parent_pid,
-                  content_model="adr:adrBasicObject"):
-    # Queries repository and gets the next available pid
-    new_pid = repository.api.ingest(text=None)
-    # Opens up the mods.xml from the directory
-    mods = etree.XML(open(os.path.join(file_path,"mods.xml"),'rb').read())
-    # Extracts title to set as Fedora Object's label
-    title_element = mods.find("{{{0}}}titleInfo/{{{0}}}title".format(MODS_NS))
-    repository.api.modifyObject(pid=new_pid,
-                                label=title_element.text,
-                                ownerId=settings.FEDORA_USER,
-                                state="A")
-    # Adds MODS datastream to the new object
-    repository.api.addDatastream(pid=new_pid,
-                                 dsID="MODS",
-                                 dsLabel="MODS",
-                                 mimeType="application/rdf+xml",
-                                 content=etree.tostring(mods))
-    # create a file directory walker to find image files in the directory
-    all_files = next(os.walk(file_path))[2]
-
-    for filename in all_files:
-        file_root,file_ext = os.path.splitext(filename)
-        if file_ext != ".xml":
-            content = open(os.path.join(file_path,filename),"rb").read()
-            # Weird bug in Fedora doesn't recognize image/pjpeg for .jpg
-            # files, manually sets mime_type to image/jpeg
-            mime_type = mimetypes.guess_type(filename)[0]
-            if file_ext == ".jpg":
-                mime_type = "image/jpeg"
-            result = repository.api.addDatastream(pid=new_pid,
-                                                  controlGroup="M",
-                                                  dsID=filename,
-                                                  dsLabel=file_root,
-                                                  mimeType=mime_type,
-                                                  content=content)
-    # finally, add RELS-EXT datastream
-    rels_ext_template = Template(RELS_EXT)
-    rels_ext_context = Context({'object_pid':new_pid,
-                                'content_model':content_model,
-                                'parent_pid':parent_pid})
-    rels_ext = rels_ext_template.render(rels_ext_context)
-    repository.api.addDatastream(pid=new_pid,
-                                 dsID="RELS-EXT",
-                                 dsLabel="RELS-EXT",
-                                 mimeType="application/rdf+xml",
-                                 content=rels_ext)
-    return new_pid
-
 
 
 def repository_move(source_pid,collection_pid):
@@ -339,5 +292,12 @@ def extract_title(mods_xml):
                 title_entities.append(output)
     return title_entities
 
-from app import app
 
+# SPARQL Queries
+NEWEST_SPARQL = """SELECT DISTINCT ?s ?date
+WHERE {{ ?s <fedora-model:createdDate> ?date . }}
+ORDER BY DESC(?date)
+LIMIT 100
+OFFSET {0}"""
+
+from app import app

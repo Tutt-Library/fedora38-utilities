@@ -6,6 +6,7 @@ __author__ = "Jeremy Nelson"
 from flask import Flask, render_template, request
 from forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
 from helpers import create_mods, create_stubs
+from indexer import Indexer
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('config.py')
@@ -33,9 +34,11 @@ def add_stub():
 def index_repository():
     index_form = IndexRepositoryForm(csrf_enabled=False)
     if index_form.validate_on_submit():
+        indexer = Indexer(app=app)
         if index_form.index_choice.data.startswith("0"):
             return "In Incremental Index"
         elif index_form.index_choice.data.startswith("1"):
+            indexer.index_collection("coccc:root")
             return "Should now run full index"
         else:
             return "Unknown Indexing option"
@@ -47,4 +50,5 @@ def index_repository():
 #return views.batch_ingest()
 
 if __name__ == '__main__':
+    print("Before app run")
     app.run(debug=True)
