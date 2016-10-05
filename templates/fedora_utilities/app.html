@@ -24,13 +24,16 @@
  <div class="row" id="first-container" class="container" style="padding-top: 40px">
   {# START fedora batch nav DIV #}
   <div class="col-sm-3 col-md-2">
-   <ul class="nav nav-stacked nav-pills" >
-    <li {% if request.path.startswith('add_stub') %} class="active"{% endif %}
+   <ul class="list-group" >
+    <li class="list-group-item {% if request.path.startswith('add_stub') %}active{% endif %}">
       <i class="icon-chevron-right pull-right"></i>
-       <a href="{{ url_for('add_stub') }}">Add Fedora Objects from Template</a>
+       <a href="{{ url_for('add_stub') }}">Batch Creator</a>
     </li>
-    <li>
-        <a href="{{ url_for('index_repository') }}">Index repository</a>
+    <li class="list-group-item">
+        <a href="{{ url_for('index_repository') }}">Index Repository</a>
+    </li>
+    <li class="list-group-item">
+        <a href="{{ url_for('mods_replacement') }}">MODS Replacement</a>
     </li>
    </ul>
   {# END fedora batch nav DIV #}
@@ -49,7 +52,7 @@
      </div>
     {% else %}
 	 <p>Original code migrated from Aristotle Library Apps project to Flask-based
-         application in the Colorado College's Catalog Pull Platform.</p>
+         application in  Colorado College's Catalog Pull Platform.</p>
     {% endif %}
    </div>
    {% block fedora_form %}{% endblock %}

@@ -2,6 +2,7 @@ __author__ = "Jeremy Nelson"
 import datetime
 from flask_wtf import Form
 from wtforms import SelectField, StringField, TextAreaField
+from wtforms.fields.html5 import DateField
 from wtforms import validators
 
 DIGITAL_ORIGIN = [('born digital','born digital'),
@@ -182,3 +183,8 @@ class AddFedoraObjectFromTemplate(Form):
 class IndexRepositoryForm(Form):
     index_choice = SelectField('Incremental or Full',
         choices=[('0', 'Incremental'),( '1', 'Full')])
+    start_from = DateField('Start Index From', format='%Y-%m-%d')
+
+class MODSReplacementForm(Form):
+    new_value = StringField("New Value")
+    select_xpath = StringField("Selection XPath")

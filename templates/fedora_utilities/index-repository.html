@@ -5,10 +5,19 @@
     <h2>Index Repository</h2>
     <p>Index Fedora repository into Elastic Search</p>
     <form method="POST" action="{{ url_for('index_repository') }}">
-        <div class="form-group">
-            {{ index_form.index_choice.label }}
-            {{ index_form.index_choice(class_="form-control") }} 
-        </div>
+        <div class="row">
+            <section class="col-md-6">
+                <div class="form-group">
+                  {{ index_form.index_choice.label }}
+                  {{ index_form.index_choice(class_="form-control") }} 
+                </div>
+            </section>
+            <section class="col-md-6">
+                <div class="form-group">
+                    {{index_form.start_from.label }}
+                    {{ index_form.start_from(class_='form-control') }} 
+                </div>
+            </section>
         <div class="form-group">
             <button class="btn btn-primary" type="submit">Run Index</button>
         </div>

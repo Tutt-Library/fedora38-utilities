@@ -1,10 +1,9 @@
 {% extends 'fedora_utilities/app.html' %}
 
 {% block fedora_form %}
-   <div class="well well-small" data-bind="visible: batchIngest">
+   <div class="jumbotron">
        <a name="ingest"></a>
-       <h2>Batch Ingest</h2>
-        <p>{{ ingest_form.errors }}</p>
+       <h2>Batch Creator</h2>
 	<form method="POST" action="{{ url_for('add_stub') }}" id="ingest_form" enctype="multipart/form-data" >
             <div class="row">
                 <section class="col-md-6">

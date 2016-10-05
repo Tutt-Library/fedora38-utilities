@@ -5,6 +5,7 @@ __author__ = "Jeremy Nelson"
 
 from flask import Flask, render_template, request
 from forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
+from forms import MODSReplacementForm
 from helpers import create_mods, create_stubs
 from indexer import Indexer
 
@@ -46,9 +47,14 @@ def index_repository():
     return render_template('fedora_utilities/index-repository.html',
         index_form=index_form)
 
-#@app.route("/ingest$")
-#return views.batch_ingest()
+
+@app.route("/mods-replacement")
+def mods_replacement():
+    replace_form = MODSReplacementForm(csrf_enabled=False)
+    if replace_form.validate_on_submit():
+        return "Submitted {}".format(replace_form.select_xpath.value)
+    return render_template('fedora_utilities/mods-replacement.html',
+        replace_form=replace_form)
 
 if __name__ == '__main__':
-    print("Before app run")
     app.run(debug=True)

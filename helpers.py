@@ -200,7 +200,7 @@ def create_stubs(mods_xml,
             "controlGroup": "M",
             "dsLabel": "RELS-EXT",
             "mimeType": "application/rdf+xml"})
-        rels_url = "{0}{1}/RELS-EXT?{2}".format(
+        rels_url = "{0}{1}/datastreams/RELS-EXT?{2}".format(
             app.config.get('FEDORA_URL'),
             new_pid,
             params)
