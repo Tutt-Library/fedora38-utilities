@@ -3,10 +3,11 @@
 """
 __author__ = "Jeremy Nelson"
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, Response
+from flask import jsonify
 from forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
 from forms import MODSReplacementForm
-from helpers import create_mods, create_stubs
+from helpers import create_mods, generate_stubs
 from indexer import Indexer
 
 app = Flask(__name__, instance_relative_config=True)
@@ -21,12 +22,11 @@ def add_stub():
     ingest_form = AddFedoraObjectFromTemplate(csrf_enabled=False)
     if ingest_form.validate_on_submit():
         mods_xml = create_mods(request.form)
-        pids = create_stubs(mods_xml,
-            request.form.get('title'),
-            request.form.get('parent_collection'),
-            request.form.get('number_objects'),
-            request.form.get('content_models'))
-        return "Ingest form {}".format(mods_xml)
+        return jsonify(generate_stubs(mods_xml=mods_xml,
+            title=request.form.get('title'),
+            parent_pid=request.form.get('collection_pid'),
+            num_objects=request.form.get('number_objects'),
+            content_model=request.form.get('content_models')))
     return render_template('fedora_utilities/batch-ingest.html',
         ingest_form=ingest_form)
 

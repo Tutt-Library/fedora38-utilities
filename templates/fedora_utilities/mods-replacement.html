@@ -1,0 +1,29 @@
+{% extends 'fedora_utilities/app.html' %}
+
+{% block fedora_form %}
+<div class="jumbotron">
+    <h2>MODS Replacement</h2>
+    <p>Form allows for batch updating of MODS metadata</p>
+    <form method="POST" action="{{ url_for('mods_replacement') }}">
+        <div class="row">
+            <section class="col-md-8">
+                <div class="form-group">
+                  {{ replace_form.select_xpath.label }}
+                  {{ replace_form.select_xpath(class_="form-control") }} 
+                </div>
+            </section>
+        </div>
+        <div class="row">
+            <section class="col-md-6">
+                <div class="form-group">
+                    {{ replace_form.new_value.label }}
+                    {{ replace_form.new_value(class_="form-control") }}
+                </div>
+            </section>
+        </div>
+        <div class="form-group">
+            <button class="btn btn-primary" type="submit">Replace values</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

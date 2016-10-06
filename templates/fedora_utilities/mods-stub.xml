@@ -36,7 +36,6 @@
  </role> 
 </name>
 {% endfor %}
-
 {% for org in corporate_contributors %}
 <name type="corporate">
  <namePart>{{ org }}</namePart>
@@ -76,8 +75,7 @@
  {% if form %}
  <form>{{ form }}</form>
  {% endif %}
- <genre>{{ genre }}</genre>
- <digitalOrigin>{{ digitalOrigin }}</digitalOrigin>
+ <digitalOrigin>{{ digital_origin }}</digitalOrigin>
  {% if extent %}
  <extent>{{ extent }}</extent>
  {% endif %}

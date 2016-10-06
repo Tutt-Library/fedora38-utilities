@@ -105,11 +105,11 @@ GENRE = [('choose', 'Choose...'),
          ("yearbook", "Yearbook")]
          
 
-CONTENT_MODELS = [('sp_basic_image', 'Basic Image Content Model'),
-                  ('sp_pdf', 'PDF Content Model'),
-                  ('compoundCModel', 'Compound Object Content Model'),
-                  ('sp-audioCModel', 'Audio Content Model'),
-                  ('sp_videoCModel', 'Video Content Model')]
+CONTENT_MODELS = [('islandora:sp_basic_image', 'Basic Image Content Model'),
+                  ('islandora:sp_pdf', 'PDF Content Model'),
+                  ('islandora:compoundCModel', 'Compound Object Content Model'),
+                  ('islandora:sp-audioCModel', 'Audio Content Model'),
+                  ('islandora:sp_videoCModel', 'Video Content Model')]
 
 INSTITUTION_NAME = 'Colorado College'
 
@@ -169,8 +169,8 @@ class AddFedoraObjectFromTemplate(Form):
                                 validators=[validators.optional(), 
                                             validators.length(max=255)],
                                 default=INSTITUTION_NAME)
-    rights_holder = TextAreaField('Rights Statement',
-                                   default=RIGHTS_STATEMENT)
+    rights_statement = TextAreaField('Rights Statement',
+                                      default=RIGHTS_STATEMENT)
     subject_dates = StringField('Subject -- Dates')
     subject_people = StringField('Subject -- People')
     subject_places = StringField('Subject -- Places',

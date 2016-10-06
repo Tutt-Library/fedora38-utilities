@@ -4,7 +4,12 @@
    <div class="jumbotron">
        <a name="ingest"></a>
        <h2>Batch Creator</h2>
-	<form method="POST" action="{{ url_for('add_stub') }}" id="ingest_form" enctype="multipart/form-data" >
+        <div class="alert alert-warning hidden-xs-up" id="batch-status">
+            <h4 class="alert-heading">Running Batch Job &hellip;</h4>
+        </div>
+	<form id="batch-form" 
+              method="POST" action="{{ url_for('add_stub') }}" 
+              id="ingest_form" enctype="multipart/form-data" >
             <div class="row">
                 <section class="col-md-6">
                     <div class="form-group {% if ingest_form.collection_pid.errors %}alert alert-danger{% endif %}">
@@ -96,8 +101,8 @@
                 </section>
                 <section class="col-md-6">
                     <div class="form-group">
-                        {{ ingest_form.rights_holder.label }}
-                        {{ ingest_form.rights_holder(class_='form-control', rows=4) }}
+                        {{ ingest_form.rights_statement.label }}
+                        {{ ingest_form.rights_statement(class_='form-control', rows=4) }}
                     </div>
                 </section>
 
@@ -172,6 +177,7 @@
             </div>
          <div class="btn-group">
             <input type="submit" value="Add Stub Record(s)" class="btn btn-lg btn-primary"></input>
+            <input type="reset" value="Reset Form" class="btn btn-lg btn-warning"></input>
          </div>
 	</form>
    </div>
@@ -184,5 +190,27 @@
         var last_field = $(btn).prev();
         last_field.after("<br><input name='" + field_id + "' type='text', class='form-control'></input>");
     }
+
+    $("#batch-form").submit(function() {
+        var url = $(this).attr('action');
+        $("#batch-form").addClass("hidden-xs-up");
+        $("#batch-status").removeClass("hidden-xs-up");
+
+        $.ajax({
+            data: $(this).serialize(),
+            type: $(this).attr('method'),
+            url: url,
+            success: function(response) {
+               $("#batch-status").removeClass("alert-warning");
+               $("#batch-status").addClass("alert-success");
+               $("#batch-status h4").text("Success! Batch Run Completed");
+               for(i in response) {
+                var msg = "PID " + response[i]["pid"] + " added on " + response[i]["completed"];
+                $("#batch-status").append("<p>" + msg + "</p>");
+               }
+            }
+        });
+        return false;
+    });
 </script>
 {% endblock %}

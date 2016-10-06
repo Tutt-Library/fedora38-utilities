@@ -3,7 +3,9 @@
 """
 __author__ = "Jeremy Nelson"
 
+import datetime
 import forms
+import json
 import mimetypes
 import os
 import requests
@@ -11,6 +13,7 @@ import shutil
 import urllib.parse
 import xml.etree.ElementTree as etree
 
+from flask import Response
 from jinja2 import Environment, FileSystemLoader
 
 
@@ -30,7 +33,7 @@ def create_mods(form):
     Returns:
         str: Raw XML string of MODS document
     """ 
-    mods_context = {'dateCreated': [],
+    mods_context = {'dateCreated': form.get('date_created'),
         'digital_origin': form.get('digital_origin'),
                       'contributors': [],
                       'corporate_contributors': [],
@@ -39,54 +42,58 @@ def create_mods(form):
                       'genre': form.get('genre'),
                       'organizations': [],
                       'schema_type': 'CreativeWork', # Default,
+                      'subject_dates': [],
                       'subject_people': [],
                       'subject_places': [],
                       'subject_topics': [],
-                      'title': form.get('title')
+                      'title': form.get('title'),
+                      'typeOfResource': form.get('type_of_resource')
                       }
     for row in form.getlist('creators'):
-        mods_context['creators'].append(row)
+        if len(row) > 0:
+            mods_context['creators'].append(row)
     for row in form.getlist('corporate_creators'):
-        mods_context['corporate_creators'].append(row)
+        if len(row) > 0:
+            mods_context['corporate_creators'].append(row)
     for row in form.getlist('contributors'):
-        mods_context['contributors'].append(row)
+        if len(row) > 0:
+            mods_context['contributors'].append(row)
     for row in form.getlist('corporate_contributors'):
-        mods_context['corporate_contributors'].append(row)
+        if len(row) > 0:
+            mods_context['corporate_contributors'].append(row)
     for row in form.getlist('subject_people'):
-        mods_context['subject_people'].append(row)
+        if len(row) > 0:
+            mods_context['subject_people'].append(row)
     for row in form.getlist('organizations'):
-        mods_context['organizations'].append(row)
-    for row in form.getlist('subject_people'):
-        mods_context['subject_people'].append(row)
+        if len(row) > 0:
+            mods_context['organizations'].append(row)
+    for row in form.getlist('subject_places'):
+        if len(row) > 0:
+            mods_context['subject_places'].append(row)
+    for row in form.getlist('subject_dates'):
+        if len(row) > 0:
+            mods_context['subject_dates'].append(row)
+
     for row in form.getlist('subject_topics'):
-        mods_context['subject_topics'].append(row)
+        if len(row) > 0:
+            mods_context['subject_topics'].append(row)
     if len(form.get('genre')) > 0:
         mods_context['genre'] = form.get('genre')
-    #if len(admin_note) > 0:
-    #    mods_context['admin_note'] = admin_note
-    #description = add_obj_template_form.cleaned_data[
-    #      'description']
-    #if len(description) > 0:
-    #    mods_context['description'] = description
+    admin_note = form.get('admin_note')
+    if len(admin_note) > 0:
+        mods_context['admin_note'] = admin_note
+    description = form.get('description')
+    if len(description) > 0:
+        mods_context['description'] = description
     #alt_title = add_obj_template_form.cleaned_data[
     #      'alt_title']
     #if len(alt_title) > 0:
     #    mods_context['alt_title'] = alt_title
-    #rights_holder = add_obj_template_form.cleaned_data[
-    #      'rights_holder']
-    #if len(rights_holder) > 0:
-    #    mods_context['rights_statement'] = rights_holder
-    #collection_pid = add_obj_template_form.cleaned_data[
-    #      'collection_pid']
-    #number_stub_recs = add_obj_template_form.cleaned_data[
-    #      'number_objects']
-    #mods_context['form'] = add_obj_template_form.cleaned_data['form']
-    #mods_context['typeOfResource'] = add_obj_template_form.cleaned_data[
-    #      'type_of_resource']
-    #for row in forms.DIGITAL_ORIGIN:
-    #    if row[0] == int(digital_origin_id):
-    #        mods_context['digitalOrigin'] = row[1]
-    mods_context['language'] = 'English'
+    rights_stmt = form.get('rights_statement')
+    if len(rights_stmt) > 0:
+        mods_context['rights_statement'] = rights_stmt
+    mods_context['form'] = form.get('form')
+    mods_context['language'] = form.get('language', 'English')
     mods_context['publication_place'] = forms.PUBLICATION_PLACE
     mods_context['publisher'] = forms.PUBLISHER
     if len(form.get('extent')) > 0:
@@ -141,21 +148,14 @@ def handle_uploaded_zip(file_request,parent_pid):
 
 def __new_pid__():
     pid_result = requests.post(
-        "{0}nextPID?format=xml&namespace=coccc".format(app.config.get('FEDORA_URL')),
+        "{0}new?namespace=coccc".format(app.config.get('FEDORA_URL')),
          auth=app.config.get('FEDORA_AUTH'))
     if pid_result.status_code > 399:
         raise ValueError("Could not retrieve nextPID, HTTP Code {}".format(
             pid_result.status_code))
-    pid_doc = etree.XML(pid_result.text)
-    pid = pid_doc.find("fedora_manage:pid", DEFAULT_NS)
-    if pid is not None:
-        return pid.text
+    return pid_result.text
 
-def create_stubs(mods_xml,
-                 title,
-                 parent_pid,
-                 num_objects,
-                 content_model='compoundCModel'):
+def create_stubs(**kwargs):
     """Function creates 1-n number of basic Fedora Objects in a repository
 
     Parameters:
@@ -166,7 +166,13 @@ def create_stubs(mods_xml,
     content_model -- Content model for the stub records, defaults to
                      compound object
     """
+    mods_xml = kwargs.get('mods_xml')
+    title = kwargs.get('title')
+    parent_pid = kwargs.get('parent_pid') 
+    num_objects = kwargs.get('num_objects')
+    content_model = kwargs.get("content_model", 'compoundCModel')
     auth = app.config.get('FEDORA_AUTH')
+    pids = []
     for i in range(0, int(num_objects)):
         new_pid = __new_pid__()
         # Add a label to new PID using the title
@@ -194,7 +200,7 @@ def create_stubs(mods_xml,
             'templates/fedora_utilities/rels-ext.xml')
         rels_ext_context = {'object_pid':new_pid,
                             'content_model':content_model,
-                            'parent_pid':parent_pid}
+                            'collection_pid':parent_pid}
         rels_ext = rels_ext_template.render(**rels_ext_context)
         params = urllib.parse.urlencode({
             "controlGroup": "M",
@@ -207,8 +213,14 @@ def create_stubs(mods_xml,
         rels_result = requests.post(rels_url,
             data=rels_ext,
             auth=auth)
-    return True
+        #yield json.dumps(
+        pids.append(
+            {"pid": new_pid, 
+             "completed": datetime.datetime.utcnow().isoformat()})
+    return pids
 
+def generate_stubs(**kwargs):
+    return create_stubs(**kwargs)
 
 def repository_move(source_pid,collection_pid):
     """
