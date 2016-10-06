@@ -146,10 +146,10 @@ def handle_uploaded_zip(file_request,parent_pid):
     #os.remove(zip_contents)
     return statuses
 
-def __new_pid__():
+def __new_pid__(fedora_url, auth):
     pid_result = requests.post(
-        "{0}new?namespace=coccc".format(app.config.get('FEDORA_URL')),
-         auth=app.config.get('FEDORA_AUTH'))
+        "{0}new?namespace=coccc".format(fedora_url),
+         auth=auth)
     if pid_result.status_code > 399:
         raise ValueError("Could not retrieve nextPID, HTTP Code {}".format(
             pid_result.status_code))
@@ -158,7 +158,7 @@ def __new_pid__():
 def create_stubs(**kwargs):
     """Function creates 1-n number of basic Fedora Objects in a repository
 
-    Parameters:
+    Keyword args:
     mods_xml -- MODS XML used for all stub MODS datastreams
     title -- Title of Fedora Object
     parent_pid -- PID of Parent collection
@@ -166,19 +166,21 @@ def create_stubs(**kwargs):
     content_model -- Content model for the stub records, defaults to
                      compound object
     """
+    config = kwargs.get("config")
     mods_xml = kwargs.get('mods_xml')
     title = kwargs.get('title')
     parent_pid = kwargs.get('parent_pid') 
     num_objects = kwargs.get('num_objects')
     content_model = kwargs.get("content_model", 'compoundCModel')
-    auth = app.config.get('FEDORA_AUTH')
+    auth = config.get('FEDORA_AUTH')
     pids = []
     for i in range(0, int(num_objects)):
-        new_pid = __new_pid__()
+        new_pid = __new_pid__(config.get("FEDORA_URL"), 
+            config.get("FEDORA_AUTH"))
         # Add a label to new PID using the title
         params = urllib.parse.urlencode({"label": title})
         add_label_url = "{0}{1}?{2}".format(
-            app.config.get('FEDORA_URL'),
+            config.get('FEDORA_URL'),
             new_pid,
             params)
         add_label_result = requests.put(add_label_url,
@@ -189,7 +191,7 @@ def create_stubs(**kwargs):
             "dsLabel": "MODS",
             "mimeType": "text/xml"})
         new_mods_url = "{0}{1}/datastreams/MODS?{2}".format(
-            app.config.get('FEDORA_URL'),
+            config.get('FEDORA_URL'),
             new_pid,
             params)
         mods_ds_result = requests.post(new_mods_url,
@@ -207,7 +209,7 @@ def create_stubs(**kwargs):
             "dsLabel": "RELS-EXT",
             "mimeType": "application/rdf+xml"})
         rels_url = "{0}{1}/datastreams/RELS-EXT?{2}".format(
-            app.config.get('FEDORA_URL'),
+            config.get('FEDORA_URL'),
             new_pid,
             params)
         rels_result = requests.post(rels_url,
@@ -311,5 +313,3 @@ WHERE {{ ?s <fedora-model:createdDate> ?date . }}
 ORDER BY DESC(?date)
 LIMIT 100
 OFFSET {0}"""
-
-from app import app

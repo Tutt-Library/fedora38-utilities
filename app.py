@@ -26,7 +26,9 @@ def add_stub():
     ingest_form = AddFedoraObjectFromTemplate(csrf_enabled=False)
     if ingest_form.validate_on_submit():
         mods_xml = create_mods(request.form)
-        return jsonify(generate_stubs(mods_xml=mods_xml,
+        return jsonify(generate_stubs(
+            config=app.config,
+            mods_xml=mods_xml,
             title=request.form.get('title'),
             parent_pid=request.form.get('collection_pid'),
             num_objects=request.form.get('number_objects'),
