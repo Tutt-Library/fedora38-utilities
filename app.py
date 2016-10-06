@@ -17,6 +17,10 @@ app.config.from_pyfile('config.py')
 def default():
     return render_template('fedora_utilities/app.html')
 
+@app.route("/about")
+def about():
+    return render_template("fedora_utilities/about.html")
+
 @app.route("/add_stub", methods=["GET", "POST"])
 def add_stub():
     ingest_form = AddFedoraObjectFromTemplate(csrf_enabled=False)
