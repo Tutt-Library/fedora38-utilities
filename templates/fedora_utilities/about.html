@@ -1,9 +1,15 @@
 {% extends 'fedora_utilities/base.html' %}
 
 {% block body %}
-<h2>About Fedora 3.8 Utilties</h2>
+<h2>About Fedora 3.8 Utilities</h2>
 <ul>
     <li><a href="#config">Configuration</a></li>
 
 </ul>
+<a name="config"></a>
+<h3>Configuration</h3>
+<h3>Running</h3>
+<pre>
+    gunicorn -b 0.0.0.0:9455 run:application
+</pre>
 {% endblock %}
