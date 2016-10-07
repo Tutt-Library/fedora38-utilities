@@ -34,7 +34,20 @@ etree.register_namespace("islandora", str(ISLANDORA))
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("Elasticsearch").setLevel(logging.ERROR)
 
-        
+
+class WebPageHandler(logging.Handler):
+
+    def __init__(self):
+        logging.Handler.__init__(self)
+        self.messages = []
+
+    def emit(self, record):
+        self.messages.append(self.format(record))
+
+    def get_messages(self):
+        return self.messages
+
+
 
 class Indexer(object):
     """Elasticsearch MODS and PDF full-text indexer for Fedora Repository 3.8"""
@@ -59,6 +72,8 @@ class Indexer(object):
             app.config.get('ELASTIC_SEARCH'))
         if not isinstance(self.elastic, Elasticsearch):
             self.elastic = Elasticsearch(hosts=self.elastic)
+        self.logger = logging.getLogger(__file__)
+        self.messages = []
         self.rest_url = kwargs.get("rest_url", app.config.get('FEDORA_URL'))
         self.ri_search = kwargs.get("ri_url", app.config.get('RI_URL'))
         self.skip_pids = []
@@ -69,7 +84,6 @@ class Indexer(object):
             self.rest_url = "http://localhost:8080/fedora/objects/"
         if not self.ri_search:
             self.ri_search = "http://localhost:8080/fedora/risearch"
-        print("Elastic search repository index exists {}".format(self.elastic.indices.exists('repository')))
         if not self.elastic.indices.exists('repository'):
             # Load mapping
             self.elastic.indices.create(index='repository', body=MAP)
@@ -429,9 +443,11 @@ WHERE {{
   ?s <fedora-rels-ext:isMemberOfCollection> <info:fedora/{}> .
 }}""".format(pid)
         started = datetime.datetime.utcnow()
-        print("Started indexing collection {} at {}".format(
+        msg = "Started indexing collection {} at {}".format(
             pid,
-            started.isoformat()))
+            started.isoformat())
+        self.logger.info(msg)
+        self.messages.append(msg)
         children_response = requests.post(
             self.ri_search,
             data={"type": "tuples",
@@ -470,11 +486,20 @@ WHERE {{
                 err_title,
                 children_response.text)
         end = datetime.datetime.utcnow()
-        print("Indexing done {} at {}, total object {} total time {}".format(
+        msg = "Indexing done {} at {}, total object {} total time {}".format(
             pid,
             end.isoformat(),
             len(children),
-            (end-started).seconds / 60.0))
+            (end-started).seconds / 60.0)
+        self.logger.info(msg)
+        self.messages.append(msg)
+
+    def reset(self):
+        """Deletes existing repository index and reloads Map"""
+        if self.elastic.indices.exists('repository'):
+            self.elastic.indices.delete(index='repository')
+            # Load mapping
+            self.elastic.indices.create(index='repository', body=MAP)
 
 
 class IndexerError(Exception):

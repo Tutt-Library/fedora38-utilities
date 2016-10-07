@@ -183,7 +183,10 @@ class AddFedoraObjectFromTemplate(Form):
 class IndexRepositoryForm(Form):
     index_choice = SelectField('Incremental or Full',
         choices=[('0', 'Incremental'),( '1', 'Full')])
-    start_from = DateField('Start Index From', format='%Y-%m-%d')
+    start_from = DateField(
+        'Start Index From', 
+        format='%Y-%m-%d',
+        validators=(validators.Optional(),))
 
 class MODSReplacementForm(Form):
     new_value = StringField("New Value")

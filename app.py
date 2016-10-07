@@ -3,6 +3,9 @@
 """
 __author__ = "Jeremy Nelson"
 
+import json
+import threading
+
 from flask import Flask, render_template, request, redirect, Response
 from flask import jsonify
 from forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
@@ -12,6 +15,23 @@ from indexer import Indexer
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('config.py')
+
+ACTIVE_MSGS = []
+BACKEND_THREAD = None
+
+class IndexerThread(threading.Thread):
+
+    def __init__(self, **kwargs):
+        threading.Thread.__init__(self)
+        self.indexer = Indexer(app=app)
+        self.job = kwargs.get("job")
+        self.pid = kwargs.get("pid")
+        
+    def run(self):
+        if self.job.lower().startswith("full"):
+            self.indexer.reset()
+            self.indexer.index_collection(self.pid)
+        return 
 
 @app.route("/")
 def default():
@@ -37,18 +57,30 @@ def add_stub():
         ingest_form=ingest_form)
 
 
+@app.route("/index/status")
+def indexing_status():
+    if len(BACKEND_THREAD.indexer.messages) > 0:
+        msg = BACKEND_THREAD.indexer.messages.pop(0)
+    else:
+        msg = "Finished"
+    return jsonify({"message": msg})
+
+
+
+
 @app.route("/index", methods=["POST", "GET"])
 def index_repository():
+    global BACKEND_THREAD
     index_form = IndexRepositoryForm(csrf_enabled=False)
     if index_form.validate_on_submit():
-        indexer = Indexer(app=app)
         if index_form.index_choice.data.startswith("0"):
-            return "In Incremental Index"
+            return jsonify({"message": "Started Incremental Indexing"})
         elif index_form.index_choice.data.startswith("1"):
-            indexer.index_collection("coccc:root")
-            return "Should now run full index"
+            BACKEND_THREAD = IndexerThread(job="full", pid="coccc:root")
+            BACKEND_THREAD.start()
+            return jsonify({"message": "Started Full Indexing"})
         else:
-            return "Unknown Indexing option"
+            return jsonify({"message": "Unknown Indexing option"})
  
     return render_template('fedora_utilities/index-repository.html',
         index_form=index_form)

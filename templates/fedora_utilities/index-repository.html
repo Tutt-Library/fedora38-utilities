@@ -4,7 +4,13 @@
 <div class="jumbotron">
     <h2>Index Repository</h2>
     <p>Index Fedora repository into Elastic Search</p>
-    <form method="POST" action="{{ url_for('index_repository') }}">
+    <form method="POST" action="{{ url_for('index_repository') }}" id="index-form">
+        {% if index_form.errors %}
+        <div class="alert alert-danger">
+        <h4 class="alert-heading">Errors!</h4>
+            {{ index_form.errors }}
+        </div>
+        {% endif %}
         <div class="row">
             <section class="col-md-6">
                 <div class="form-group">
@@ -23,4 +29,72 @@
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block dialogs %}
+<div class="modal fade" id="index-status-dlg">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">Indexer Running &hellip;</h4>
+      </div>
+      <div class="modal-body">
+        <ul id="messages">
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+{% endblock %}
+
+{% block more_js %}
+<script src="{{ url_for('static', filename='js/oboe-browser.min.js') }}"></script>
+
+<script>
+    $("#index-form").submit(function() {
+        var url = $(this).attr('action');
+        if($("#index_choice").val() == 1) {
+            var choice = confirm("This will delete existing search index.\nContinue?");
+            if (choice == false) {
+                return false;
+            }
+        }
+        $.ajax({
+            data: $(this).serialize(),
+            type: $(this).attr('method'),
+            url: url,
+            success: function(response) {
+                $('#index-status-dlg').modal('show');
+                for(i in response) {
+                    $("#messages").append("<li>" + response[i] + "</li>");
+                }
+                timer = setInterval(function() {
+                    $.getJSON("{{ url_for('indexing_status') }}",
+                        function(data) {
+                           for(i in data) { 
+                               var message = data[i];
+                               console.log(message);
+                               if(message == "Finished") {
+                                    clearInterval(timer);
+                               }
+                               if(message.length > 0) {
+                                   $("#messages").append("<li>" + message + "</li>");
+                               }
+                           }
+                     });
+                }, 7000);
+           }
+        });
+        return false;
+    });
+
+
+</script>
 {% endblock %}
