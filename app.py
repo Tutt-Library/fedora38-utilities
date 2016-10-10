@@ -76,7 +76,11 @@ def index_repository():
         if index_form.index_choice.data.startswith("0"):
             return jsonify({"message": "Started Incremental Indexing"})
         elif index_form.index_choice.data.startswith("1"):
-            BACKEND_THREAD = IndexerThread(job="full", pid="coccc:root")
+            elastic_host = index_form.indices.data
+            BACKEND_THREAD = IndexerThread(
+                elasticsearch=elastic_host,
+                job="full", 
+                pid="coccc:root")
             BACKEND_THREAD.start()
             return jsonify({"message": "Started Full Indexing"})
         else:

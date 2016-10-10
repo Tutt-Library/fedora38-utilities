@@ -135,6 +135,8 @@ RIGHTS_STATEMENT = "Copyright restrictions apply. Contact Colorado College for p
 PLACE = 'Colorado Springs (Colo.)'
 PUBLISHER = "Colorado College"
 PUBLICATION_PLACE = 'Colorado Springs, Colorado'
+SEARCH_INDICES = [('li-testdocker1', 'Test Environment (li-testdocker1)'),
+                  ('li-docker1', 'Production Environment (li-docker1)')]
 
 class AddFedoraObjectFromTemplate(Form):
     admin_note = TextAreaField('Administrative Notes',
@@ -183,6 +185,8 @@ class AddFedoraObjectFromTemplate(Form):
 class IndexRepositoryForm(Form):
     index_choice = SelectField('Incremental or Full',
         choices=[('0', 'Incremental'),( '1', 'Full')])
+    indices = SelectField('Search Index',
+        choices=SEARCH_INDICES)
     start_from = DateField(
         'Start Index From', 
         format='%Y-%m-%d',

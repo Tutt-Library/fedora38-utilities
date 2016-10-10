@@ -24,8 +24,19 @@
                     {{ index_form.start_from(class_='form-control') }} 
                 </div>
             </section>
-        <div class="form-group">
-            <button class="btn btn-primary" type="submit">Run Index</button>
+        </div>
+        <div class="row">
+            <section class="col-md-8">
+                <div class="form-group">
+                    {{ index_form.indices.label }}
+                    {{ index_form.indices(class_="form-control") }}
+                </div>
+            </section>
+            <section class="col-md-4">
+                <div class="form-group"><br>
+                    <button class="btn btn-primary form-control" type="submit">Run Index</button>
+                </div>
+            </section>
         </div>
     </form>
 </div>
@@ -89,7 +100,7 @@
                                }
                            }
                      });
-                }, 7000);
+                }, 20000);
            }
         });
         return false;
