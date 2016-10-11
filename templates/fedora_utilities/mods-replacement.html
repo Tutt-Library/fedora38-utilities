@@ -1,10 +1,22 @@
 {% extends 'fedora_utilities/app.html' %}
 
+{% block utility_name %}MODS Replacement{% endblock %}
+
 {% block fedora_form %}
 <div class="jumbotron">
-    <h2>MODS Replacement</h2>
-    <p>Form allows for batch updating of MODS metadata</p>
     <form method="POST" action="{{ url_for('mods_replacement') }}">
+    <p>Form allows for batch updating of MODS metadata</p>
+        <div class="row">
+            <section class="col-md-3">
+                <button type="button" class="btn btn-success" data-toggle="modal"
+                 data-target="#search-pids-dlg">Search for PIDS</button>
+
+            </section>
+             <section class="col-md-9">
+                {{ replace_form.pid_listing.label }}
+                {{ replace_form.pid_listing(class_='form-control') }}
+              </section>
+        </div>
         <div class="row">
             <section class="col-md-8">
                 <div class="form-group">
@@ -16,14 +28,131 @@
         <div class="row">
             <section class="col-md-6">
                 <div class="form-group">
+                    {{ replace_form.old_value.label }}
+                    {{ replace_form.old_value(class_="form-control") }}
+                </div>
+           </section>
+           <section class="col-md-6">
+                <div class="form-group">
                     {{ replace_form.new_value.label }}
                     {{ replace_form.new_value(class_="form-control") }}
                 </div>
             </section>
         </div>
         <div class="form-group">
+            <button class="btn btn-warning" type="reset">Reset form</button>
             <button class="btn btn-primary" type="submit">Replace values</button>
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block dialogs %}
+<form method="POST" action="{{ url_for('search_pids') }}" id="search-form">
+<div class="modal fade" id="search-pids-dlg">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">Search for PIDS</h4>
+      </div>
+      <div class="modal-body">
+                <div class="row">
+                    <section class="col-md-8">
+                        {{ search_form.query.label }}
+                        {{ search_form.query(class_='form-control') }}
+                    </section>
+                    <section class="col-md-4">
+                        {{ search_form.facet.label }}
+                        {{ search_form.facet(class_='form-control') }}
+                    </section>
+                </div>
+                <div class="row">
+                    <section class="col-md-6">
+                        {{ search_form.indices.label }}
+                        {{ search_form.indices(class_='form-control') }}
+                    </section>
+                    <section class="col-md-6">
+                        <br>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-secondary" onclick="SelectAll(true)">Select All</button>
+                            <button type="button" class="btn btn-secondary" onclick="SelectAll(false)">Unselect All</button>
+                        </div>
+                    </section>
+                </div>
+                <div class="row">
+                    <section class="col-md-6">
+                        <ul id="results-col-1"></ul>
+                    </section>
+                    <section class="col-md-6">
+                        <ul id="results-col-2"></ul>
+                    </section>
+                </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="FindPIDs()">Find</button> 
+        <button class="btn btn-warning" onclick="ResetSearch()" type="reset">Reset</button> 
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+</form>
+{% endblock %}
+
+{% block more_js %}
+<script>
+    function FindPIDs() {
+        var form = $("#search-form");
+        var url = form.attr('action');
+        $.ajax({
+            url: url,
+            type: form.attr('method'),
+            data: form.serialize(),
+            success: function (result) {
+                for(i in result['pids']) {
+                    var ui_id = 'results-col-1';
+                    if(i%2 == 0) {
+                        ui_id =  'results-col-2';
+                    }
+                    var pid = result['pids'][i];
+                    var selectPid = $("<input type='checkbox'> " + pid + "</input>");
+                    selectPid.attr('onclick', 'AddtoPIDList("' + pid + '")');
+                    var item = $("<li class='form-group'></li>");
+                    item.append(selectPid);
+                    selectPid.attr('value', pid);
+                    $("#" + ui_id).append(item);
+                }
+            }
+        });
+    }
+
+    function AddtoPIDList(pid) {
+        var existingText = $("#pid_listing").val();
+        if(existingText.length > 0) {
+            $("#pid_listing").val(existingText + ", " + pid);
+        } else {
+            $("#pid_listing").val(pid);
+        }
+    }
+
+    function ResetSearch() {
+        $("#results-col-1").empty();
+        $("#results-col-2").empty();
+    }
+
+    function SelectAll(bool) {
+        var checkboxes = $("#search-form").find(":checkbox");
+        checkboxes.prop('checked', bool);
+        if(bool == true) {
+            checkboxes.each(function(index) {
+               AddtoPIDList($(this).val()); 
+            });
+        } else {
+            $("#pid_listing").val('');
+        }
+    }
+</script>
 {% endblock %}

@@ -66,8 +66,6 @@
 {% endblock %}
 
 {% block more_js %}
-<script src="{{ url_for('static', filename='js/oboe-browser.min.js') }}"></script>
-
 <script>
     $("#index-form").submit(function() {
         var url = $(this).attr('action');

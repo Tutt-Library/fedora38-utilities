@@ -6,12 +6,14 @@ __author__ = "Jeremy Nelson"
 import json
 import threading
 
+from elasticsearch import Elasticsearch
 from flask import Flask, render_template, request, redirect, Response
 from flask import jsonify
 from forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
-from forms import MODSReplacementForm
+from forms import MODSReplacementForm, MODSSearchForm 
 from helpers import create_mods, generate_stubs
 from indexer import Indexer
+from repairer import update_mods, update_multiple
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('config.py')
@@ -23,7 +25,8 @@ class IndexerThread(threading.Thread):
 
     def __init__(self, **kwargs):
         threading.Thread.__init__(self)
-        self.indexer = Indexer(app=app)
+        self.indexer = Indexer(app=app, 
+            elasticsearch=kwargs.get('elasticsearch'))
         self.job = kwargs.get("job")
         self.pid = kwargs.get("pid")
         
@@ -67,7 +70,6 @@ def indexing_status():
 
 
 
-
 @app.route("/index", methods=["POST", "GET"])
 def index_repository():
     global BACKEND_THREAD
@@ -90,13 +92,53 @@ def index_repository():
         index_form=index_form)
 
 
-@app.route("/mods-replacement")
+@app.route("/mods-replacement", methods=["POST", "GET"])
 def mods_replacement():
+    global BACKEND_THREAD
     replace_form = MODSReplacementForm(csrf_enabled=False)
+    search_form = MODSSearchForm(csrf_enabled=False)
     if replace_form.validate_on_submit():
-        return "Submitted {}".format(replace_form.select_xpath.value)
+        pid_listing = replace_form.pid_listing.data.split(",")
+        xpath = replace_form.select_xpath.data
+        old_value = replace_form.old_value.data
+        new_value = replace_form.new_value.data
+        return "Submitted {}".format(pid_list)
     return render_template('fedora_utilities/mods-replacement.html',
-        replace_form=replace_form)
+        replace_form=replace_form,
+        search_form=search_form)
+
+@app.route("/search", methods=["POST", "GET"])
+def search_pids():
+    search_form = MODSSearchForm(csrf_enabled=False)
+    if search_form.validate_on_submit():
+        es_host = search_form.indices.data
+        es = Elasticsearch(hosts=[es_host])
+        found_pids = []
+        query = search_form.query.data
+        facet = search_form.facet.data
+        if facet.startswith("none"):
+            search_results = es.search(q=query, 
+                index='repository',
+                fields=['pid',],
+                size=50)
+        else:
+            dsl = {"query": {
+                "term": { facet: query }
+                }
+            }
+            search_results = es.search(body=dsl,
+                index='repository', 
+                fields=['pid',],
+                size=50)
+        for hit in search_results.get('hits', {})\
+            .get('hits', []):
+            pid = hit.get('fields', {}).get('pid')
+            found_pids.append(pid)
+        return jsonify({
+            "pids": found_pids, 
+            "total": search_results.get('hits', {}).get('total', 0)})
+    return jsonify({"pids": []})
+    
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=9455)

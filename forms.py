@@ -10,6 +10,14 @@ DIGITAL_ORIGIN = [('born digital','born digital'),
                   ('digitized microfilm', 'digitized microfilm'),
                   ('digitized other analog', 'digitized other analog')]
 
+FACETS = [("none", "None"),
+          ("typeOfResource", "Format"),
+          ("subject.geographic", "Geographic"),
+          ("genres", "Genres"),
+          ("language", "Languages"),
+          ("publicationYear", "Publication Year"),
+          ("subject.temporal", "Temporal (Time)"),
+          ("subject.topic", "Topic")] 
 
 GENRE = [('choose', 'Choose...'),
          ("abstract or summary", "Abstract or Summary"),
@@ -193,5 +201,17 @@ class IndexRepositoryForm(Form):
         validators=(validators.Optional(),))
 
 class MODSReplacementForm(Form):
+    old_value = StringField("Old Value")
     new_value = StringField("New Value")
+    pid_listing = TextAreaField('PID Listing',
+            validators=[validators.optional(),])
     select_xpath = StringField("Selection XPath")
+
+class MODSSearchForm(Form):
+    facet = SelectField('Facet',
+        choices=FACETS)
+    indices = SelectField('Search Index',
+        choices=SEARCH_INDICES)
+    query = StringField("Search")
+
+
