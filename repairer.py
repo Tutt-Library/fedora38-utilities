@@ -98,36 +98,40 @@ error={} url={}""".format(
                 put_result.status_code,
                 put_result.text))
 
-def update_multiple(
-    pid_list,
-    field_xpath,
-    old_value,
-    new_value):
+def update_multiple(**kwargs):
     """Function takes a list of PIDs, the MODS field xpath, the old value to be 
     replaced by the new value.
 
-    Args:
+    Keyword args:
         pid_list -- Listing of PIDs
         field_xpath -- Field XPath
         old_value -- Old string value to be replaced
         new_value -- New string value
     """
+    app = kwargs.get('app')
+    pid_list = kwargs.get('pid_list')
+    field_xpath = kwargs.get('xpath')
+    old_value = kwargs.get('old_value')
+    new_value = kwargs.get('new_value') 
     start = datetime.datetime.utcnow()
-    print("Starting MODS update for {} PIDS at {}".format(
+    msg = "Starting MODS update for {} PIDS at {}".format(
         len(pid_list), 
-        start.isoformat()))
+        start.isoformat())
+    yield msg
     errors = []
     for i, pid in enumerate(pid_list):
         if not update_mods(pid, field_xpath, old_value, new_value):
-            print("Could update MODS for PID {}".format(pid))
             errors.append(pid)
         if not i%25:
-            print(i, end="")
+            #print(i, end="")
+            yield i
         elif not i%10:
-            print(".", end="")
+            #print(".", end="")
+            yield "."
     end = datetime.datetime.utcnow()
-    print("Finished updating MODS for {}, errors {} at {}, total {}".format(
+    msg = "Finished updating MODS for {}, errors {} at {}, total {}".format(
         len(pid_list),
         len(errors),
         end.isoformat(),
         (end-start).seconds / 60.0))
+    yield msg

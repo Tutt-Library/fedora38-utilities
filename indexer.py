@@ -346,8 +346,8 @@ WHERE {{
 
         Args:
             pid: PID to index
-	        parent: PID of parent collection, default is None
-			inCollections: List of pids that this object belongs int, used for
+            parent: PID of parent collection, default is None
+            inCollections: List of pids that this object belongs int, used for
 			    aggregations.
 
         Returns:
@@ -434,8 +434,8 @@ WHERE {{
 
         Args:
             pid -- Collection PID
-			parents -- List of all Fedora Object PIDs that pid is in the 
-			            collection
+            parents -- List of all Fedora Object PIDs that pid is in the 
+	               collection
 
         """
         sparql = """SELECT DISTINCT ?s

@@ -13,7 +13,7 @@ from forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
 from forms import MODSReplacementForm, MODSSearchForm 
 from helpers import create_mods, generate_stubs
 from indexer import Indexer
-from repairer import update_mods, update_multiple
+from repairer import update_multiple
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('config.py')
@@ -35,6 +35,19 @@ class IndexerThread(threading.Thread):
             self.indexer.reset()
             self.indexer.index_collection(self.pid)
         return 
+
+class RepairerThread(threading.Thread):
+
+    def __init__(self, **kwargs):
+        threading.Thread.__init__(self)
+        self.pid_listing = kwargs.get('pid_listing')
+        self.xpath = kwargs.get('xpath')
+        self.old_value = kwargs.get('old_value')
+        self.new_value = kwargs.get('new_value')
+        
+    def run(self):
+        
+        return
 
 @app.route("/")
 def default():
@@ -102,6 +115,7 @@ def mods_replacement():
         xpath = replace_form.select_xpath.data
         old_value = replace_form.old_value.data
         new_value = replace_form.new_value.data
+            
         return "Submitted {}".format(pid_list)
     return render_template('fedora_utilities/mods-replacement.html',
         replace_form=replace_form,
@@ -122,8 +136,9 @@ def search_pids():
                 fields=['pid',],
                 size=50)
         else:
-            dsl = {"query": {
-                "term": { facet: query }
+            dsl = {
+                "query": {
+                    "term": { facet: query }
                 }
             }
             search_results = es.search(body=dsl,
