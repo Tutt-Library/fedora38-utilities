@@ -43,11 +43,25 @@
     <h3>Index a single PID</h3>
     <p>Index (or re-index) a single PID</p>
     <form method="POST" action="{{ url_for('index_pid') }}">
+        <div class="row">
         <div class="col-md-4">
-            <input class="form-control" id="pid"></input>
+                <div class="form-group">
+                  {{ index_form.index_choice.label }}
+                  {{ index_form.index_choice(class_="form-control", id='single-pid-index') }} 
+                </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label>PID</label>
+                <input class="form-control" id="pid"></input>
+            </div>
         </div>
         <div class="col-md-2">
-            <button class="btn btn-primary" onclick="IndexPid()">Index</button>
+            <div class="form-group">
+                <label>&nbsp;</label>
+                <button class="btn btn-primary" onclick="IndexPid()">Index</button>
+            </div>
+        </div>
         </div>
     </form>
 </div>
