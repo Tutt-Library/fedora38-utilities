@@ -81,7 +81,9 @@ def indexing_status():
         msg = "Finished"
     return jsonify({"message": msg})
 
-
+@app.route("/index/pid", methods=["POST"])
+def index_pid():
+    return jsonify({"message": "Indexed PID"})
 
 @app.route("/index", methods=["POST", "GET"])
 def index_repository():

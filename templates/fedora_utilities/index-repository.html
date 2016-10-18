@@ -39,30 +39,36 @@
             </section>
         </div>
     </form>
+    <hr>
+    <h3>Index a single PID</h3>
+    <p>Index (or re-index) a single PID</p>
+    <form method="POST" action="{{ url_for('index_pid') }}">
+        <div class="col-md-4">
+            <input class="form-control" id="pid"></input>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-primary" onclick="IndexPid()">Index</button>
+        </div>
+    </form>
 </div>
-{% endblock %}
+<div class="row invisible" id="index-status">
+    <div class="col-md-8">
+        <div class="alert alert-success">
+            <h2 id="status-title"></h2>
+            <ul id="messages">
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-4">
+       <div class="btn-group">
+            <button class="btn btn-secondary" id="download-job">
+                <i class="fa fa-file-archive-o" aria-hidden="true"></i>
+                Download
+            </button> 
 
-{% block dialogs %}
-<div class="modal fade" id="index-status-dlg">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-        <h4 class="modal-title">Indexer Running &hellip;</h4>
-      </div>
-      <div class="modal-body">
-        <ul id="messages">
-        </ul>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      </div>
-    </div><!-- /.modal-content -->
-  </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
-
+       </div> 
+    </div>
+</div>
 {% endblock %}
 
 {% block more_js %}
@@ -80,7 +86,7 @@
             type: $(this).attr('method'),
             url: url,
             success: function(response) {
-                $('#index-status-dlg').modal('show');
+                $("#index-status").removeClass("invisible");
                 for(i in response) {
                     $("#messages").append("<li>" + response[i] + "</li>");
                 }
@@ -104,6 +110,9 @@
         return false;
     });
 
+    function DownloadJob() {
+        console.log("Download job");
 
+    }
 </script>
 {% endblock %}

@@ -133,5 +133,5 @@ def update_multiple(**kwargs):
         len(pid_list),
         len(errors),
         end.isoformat(),
-        (end-start).seconds / 60.0))
+        (end-start).seconds / 60.0)
     yield msg

@@ -25,14 +25,16 @@
   {# START fedora batch nav DIV #}
   <div class="col-sm-3 col-md-2">
    <ul class="list-group" >
-    <li class="list-group-item {% if request.path.startswith('add_stub') %}active{% endif %}">
-      <i class="icon-chevron-right pull-right"></i>
+    <li class="list-group-item {% if request.path.endswith('add_stub') %} bg-warning{% endif %}">
+        <i class="fa fa-th" aria-hidden="true"></i>
        <a href="{{ url_for('add_stub') }}">Batch Creator</a>
     </li>
-    <li class="list-group-item">
+    <li class="list-group-item {% if request.path.endswith("index") %} bg-warning{% endif %}">
+        <i class="fa fa-hourglass" aria-hidden="true"></i>
         <a href="{{ url_for('index_repository') }}">Index Repository</a>
     </li>
-    <li class="list-group-item">
+    <li class="list-group-item {% if request.path.endswith("replacement") %} bg-warning{% endif %}">
+        <i class="fa fa-search" aria-hidden="true"></i>
         <a href="{{ url_for('mods_replacement') }}">MODS Replacement</a>
     </li>
    </ul>
