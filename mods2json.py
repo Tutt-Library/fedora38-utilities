@@ -311,7 +311,7 @@ def url2rdf(mods):
 	Args:
        mods -- MODS etree XML document
     """
-    url = mods.find("mods:location/mods:url".format(MODS))
+    url = mods.find("mods:location/mods:url", MODS_NS)
     #! Saves as handle identifier
     if hasattr(url, "text"):
         return {"handle": url.text}
