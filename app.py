@@ -18,6 +18,8 @@ from repairer import update_multiple
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('config.py')
 
+
+
 ACTIVE_MSGS = []
 BACKEND_THREAD = None
 
@@ -83,6 +85,7 @@ def indexing_status():
 
 @app.route("/index/pid", methods=["POST"])
 def index_pid():
+    pid = request.args.get("pid")
     return jsonify({"message": "Indexed PID"})
 
 @app.route("/index", methods=["POST", "GET"])

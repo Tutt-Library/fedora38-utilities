@@ -8,7 +8,7 @@ __author__ = "Jeremy Nelson"
 import datetime
 import rdflib
 MODS = rdflib.Namespace("http://www.loc.gov/mods/v3")
-
+MODS_NS = {"mods": str(MODS)}
 
 def calculate_pubyear(rdf_json):
     """Helper function takes RDF json and attempts to extract the 
@@ -64,7 +64,7 @@ def access_condition2rdf(mods):
         dict: Dictionary of extracted Rights statement
     """
     output = {}
-    accessCondition = mods.find("{{{0}}}accessCondition".format(MODS))
+    accessCondition = mods.find("mods:accessCondition", MODS_NS)
     if accessCondition is not None:
         if accessCondition.attrib.get("type", "").startswith("useAnd"):
             output["useAndReproduction"] = accessCondition.text
@@ -81,8 +81,8 @@ def language2rdf(mods):
         dict: Dictionary of extracted language metadata
     """
     output = {'language': []}
-    xpath = "{{{0}}}language/{{{0}}}languageTerm".format(MODS)
-    languageTerms = mods.findall(xpath)
+    xpath = "mods:language/mods:languageTerm"
+    languageTerms = mods.findall(xpath, MODS_NS)
     for row in languageTerms:
         output['language'].append(row.text)
     if len(output['language']) < 1:
@@ -98,13 +98,13 @@ def names2rdf(mods):
     Returns:
         dict: Dictionary of extracted names
     """
-    names = mods.findall("{{{0}}}name".format(MODS))
+    names = mods.findall("mods:name", MODS_NS)
     output = {}
     for row in names:
-        name = row.find("{{{0}}}namePart".format(MODS))
+        name = row.find("mods:namePart", MODS_NS)
         if hasattr(name, "text") and name.text is None:
             continue
-        roleTerm = row.find("{{{0}}}role/{{{0}}}roleTerm".format(MODS))
+        roleTerm = row.find("mods:role/mods:roleTerm", MODS_NS)
         if roleTerm is not None and hasattr(roleTerm, "text"):
             if roleTerm.text is None:
                 continue
@@ -140,7 +140,7 @@ def notes2rdf(mods):
         else:
             output[field_name] = [text,]
     output = {}
-    notes = mods.findall("{{{0}}}note".format(MODS))
+    notes = mods.findall("mods:note", MODS_NS)
     for note in notes:
         if not hasattr(note, "text"):
             continue
@@ -170,22 +170,22 @@ def originInfo2rdf(mods):
         dict: Dictionary of extracted notes 
     """
     output = {}
-    originInfo = mods.find("{{{0}}}originInfo".format(MODS))
+    originInfo = mods.find("mods:originInfo", MODS_NS)
     if not originInfo:
         return output
-    place = originInfo.find("{{{0}}}place/{{{0}}}placeTerm".format(MODS))
+    place = originInfo.find("mods:place/mods:placeTerm", MODS_NS)
     if place is not None and place.text is not None:
         output['place'] = place.text
-    publisher = originInfo.find("{{{0}}}publisher".format(MODS))
+    publisher = originInfo.find("mods:publisher", MODS_NS)
     if publisher is not None and publisher.text is not None:
         output['publisher'] = publisher.text
-    copyrightDate = originInfo.find("{{{0}}}copyrightDate".format(MODS))
+    copyrightDate = originInfo.find("mods:copyrightDate", MODS_NS)
     if copyrightDate is not None and copyrightDate.text is not None:
         output["copyrightDate"] = copyrightDate.text
-    dateCreated = originInfo.find("{{{0}}}dateCreated".format(MODS))
+    dateCreated = originInfo.find("mods:dateCreated", MODS_NS)
     if dateCreated is not None and dateCreated.text is not None:
         output["dateCreated"] = dateCreated.text
-    dateIssued = originInfo.find("{{{0}}}dateIssued".format(MODS))
+    dateIssued = originInfo.find("mods:dateIssued", MODS_NS)
     if dateIssued is not None and dateIssued.text is not None:
         output["dateIssued"] = dateIssued.text 
     return output
@@ -202,16 +202,16 @@ def physicalDescription2rdf(mods):
               metadata.
     """
     output = {}
-    physicalDescription = mods.find("{{{0}}}physicalDescription".format(MODS))
+    physicalDescription = mods.find("mods:physicalDescription", MODS_NS)
     if not physicalDescription:
         return output
-    extent = physicalDescription.find("{{{0}}}extent".format(MODS))
+    extent = physicalDescription.find("mods:extent", MODS_NS)
     if extent is not None and extent.text is not None:
         #! Should add maps and illustrations and page numbers as separate
         #! ES aggregations?
         output['extent'] = extent.text
     digitalOrigin = physicalDescription.find(
-        "{{{0}}}digitalOrigin".format(MODS))
+        "mods:digitalOrigin", MODS_NS)
     if digitalOrigin is not None and digitalOrigin.text is not None:
         output["digitalOrigin"] = digitalOrigin.text
     return output
@@ -227,8 +227,8 @@ def singleton2rdf(mods, element_name):
     """
     output = {}
     output[element_name] = []
-    pattern = "{{{0}}}{1}".format(MODS, element_name)
-    elements = mods.findall(pattern)
+    pattern = "mods:{0}".format(element_name)
+    elements = mods.findall(pattern, MODS_NS)
     for element in elements:
         if not element.text in output[element_name]:
             output[element_name].append(element.text)
@@ -255,21 +255,22 @@ def subject2rdf(mods):
             subject: MODS subject element
             element_name: element's name
         """
-        element = subject.find("{{{0}}}{1}".format(MODS, element_name))
-        if hasattr(element, "text"):
-            if element_name in output["subject"].keys():
-                if not element.text in output["subject"][element_name]:
-                    output["subject"][element_name].append(element.text)
-            else:
-                output["subject"][element_name] = [element.text, ]
+        elements = subject.findall("mods:{0}".format(element_name), MODS_NS)
+        for element in elements:
+            if hasattr(element, "text"):
+                if element_name in output["subject"].keys():
+                    if not element.text in output["subject"][element_name]:
+                        output["subject"][element_name].append(element.text)
+                else:
+                    output["subject"][element_name] = [element.text, ]
     output = {"subject":{}}
-    subjects = mods.findall("{{{0}}}subject".format(MODS))
+    subjects = mods.findall("mods:subject", MODS_NS)
     for row in subjects:
         process_subject(row, "genre")
         process_subject(row, "geographic")
-        names = row.findall("{{{0}}}name".format(MODS))
+        names = row.findall("mods:name", MODS_NS)
         for name in names:
-            namePart = name.find("{{{0}}}namePart".format(MODS))
+            namePart = name.find("mods:namePart", MODS_NS)
             if namePart and namePart.text is not None:
                 if "name" in output['subject'].keys():
                     if not namePart.text in output['subject']['name']:
@@ -289,9 +290,9 @@ def title2rdf(mods):
        mods -- MODS etree XML document
     """
     output = {}
-    titles = mods.findall("{{{0}}}titleInfo".format(MODS))
+    titles = mods.findall("mods:titleInfo".format(MODS))
     for row in titles:
-        title = row.find("{{{0}}}title".format(MODS))
+        title = row.find("mods:title".format(MODS))
         type_of = row.attrib.get("type", "")
         if title is None:
             continue
@@ -310,7 +311,7 @@ def url2rdf(mods):
 	Args:
        mods -- MODS etree XML document
     """
-    url = mods.find("{{{0}}}location/{{{0}}}url".format(MODS))
+    url = mods.find("mods:location/mods:url".format(MODS))
     #! Saves as handle identifier
     if hasattr(url, "text"):
         return {"handle": url.text}

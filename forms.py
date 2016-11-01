@@ -121,6 +121,14 @@ CONTENT_MODELS = [('islandora:sp_basic_image', 'Basic Image Content Model'),
 
 INSTITUTION_NAME = 'Colorado College'
 
+LANGUAGES = [('English','English'),
+             ('Spanish', 'Spanish'),
+             ('French', 'French'),
+             ('German', 'German'),
+             ('Italian', 'Italian'),
+             ('Chinese', 'Chinese'),
+             ('Japanese', 'Japanese')] 
+
 MARC_FREQUENCY = [('choose', 'Choose...'),
                   ('Semiweekly', 'Semiweekly - 2 times a week'),
                   ('Three times a week', 'Three times a week'),
@@ -174,6 +182,7 @@ class AddFedoraObjectFromTemplate(Form):
         choices=MARC_FREQUENCY)
     genre = SelectField('Genre',
         choices=GENRE)
+    languages = SelectField('Languages', choices=LANGUAGES)
     number_objects = StringField('Number of stub records', default=1)
     organizations = StringField("Organizations",
                                 validators=[validators.optional(), 

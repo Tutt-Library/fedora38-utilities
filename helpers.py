@@ -40,6 +40,7 @@ def create_mods(form):
                       'creators': [],
                       'corporate_creators': [],
                       'genre': form.get('genre'),
+                      'language': [],
                       'organizations': [],
                       'schema_type': 'CreativeWork', # Default,
                       'subject_dates': [],
@@ -75,7 +76,7 @@ def create_mods(form):
             mods_context['subject_dates'].append(row)
 
     for row in form.getlist('subject_topics'):
-        if len(row) > 0:
+        if not row is None and len(row) > 0:
             mods_context['subject_topics'].append(row)
     if len(form.get('genre')) > 0:
         mods_context['genre'] = form.get('genre')
@@ -93,7 +94,8 @@ def create_mods(form):
     if len(rights_stmt) > 0:
         mods_context['rights_statement'] = rights_stmt
     mods_context['form'] = form.get('form')
-    mods_context['language'] = form.get('language', 'English')
+    for row in form.getlist("language"):
+        mods_context['language'].append(row)
     mods_context['publication_place'] = forms.PUBLICATION_PLACE
     mods_context['publisher'] = forms.PUBLISHER
     if len(form.get('extent')) > 0:

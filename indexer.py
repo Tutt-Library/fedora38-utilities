@@ -74,6 +74,7 @@ class Indexer(object):
             self.elastic = Elasticsearch(hosts=self.elastic)
         self.logger = logging.getLogger(__file__)
         self.messages = []
+
         self.rest_url = kwargs.get("rest_url", app.config.get('FEDORA_URL'))
         self.ri_search = kwargs.get("ri_url", app.config.get('RI_URL'))
         self.skip_pids = []
@@ -298,13 +299,13 @@ WHERE {{
             index='repository',
             doc_type='mods')
         if  result.get('hits').get('total') > 0:
-            mods_id = result.get('hits')[0].get('_id')
+            mods_id = result.get('hits').get("hits")[0].get('_id')
             self.elastic.index(
                 id=mods_id,
                 index="repository",
                 doc_type="mods",
                 body=body)
-            logging.info("Re-indexed PID=%s, ES-id=%s", pid, mods_id.get('_id'))
+            logging.info("Re-indexed PID=%s, ES-id=%s", pid, mods_id)
             return True
 
     def incremental_index(self, **kwargs):
