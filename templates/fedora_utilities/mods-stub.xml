@@ -65,7 +65,7 @@
 {% if admin_note %}
 <note type="admin">{{ admin_note }}</note>
 {% endif %}
-{% for row in language %}
+{% for row in languages %}
 <language type="text">
  <languageTerm>{{ row }}</languageTerm>
 </language>
