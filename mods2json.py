@@ -290,9 +290,9 @@ def title2rdf(mods):
        mods -- MODS etree XML document
     """
     output = {}
-    titles = mods.findall("mods:titleInfo".format(MODS))
+    titles = mods.findall("mods:titleInfo", MODS_NS)
     for row in titles:
-        title = row.find("mods:title".format(MODS))
+        title = row.find("mods:title", MODS_NS)
         type_of = row.attrib.get("type", "")
         if title is None:
             continue
