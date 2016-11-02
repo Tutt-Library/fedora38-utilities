@@ -9,6 +9,7 @@ import threading
 from elasticsearch import Elasticsearch
 from flask import Flask, render_template, request, redirect, Response
 from flask import jsonify
+from flask_socketio import SocketIO
 from forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
 from forms import MODSReplacementForm, MODSSearchForm 
 from helpers import create_mods, generate_stubs
@@ -17,7 +18,7 @@ from repairer import update_multiple
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('config.py')
-
+socketio = SocketIO(app)
 
 
 ACTIVE_MSGS = []
@@ -81,7 +82,7 @@ def indexing_status():
         msg = BACKEND_THREAD.indexer.messages.pop(0)
     else:
         msg = "Finished"
-    return jsonify({"message": msg})
+    socketio.emit('status event', {"message": msg})
 
 @app.route("/index/pid", methods=["POST"])
 def index_pid():
@@ -161,4 +162,5 @@ def search_pids():
     
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=9455)
+    socketio.run(app, host='0.0.0.0', debug=True, port=9455)
+    #app.run(host='0.0.0.0', debug=True, port=9455)
