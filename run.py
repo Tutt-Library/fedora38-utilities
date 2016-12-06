@@ -2,7 +2,7 @@ __author__ = "Jeremy Nelson"
 from werkzeug.serving import run_simple
 from werkzeug.wsgi import DispatcherMiddleware
 
-from app import app
+from legacy_fedora.app import app
 
 app.config['DEBUG'] = True
 

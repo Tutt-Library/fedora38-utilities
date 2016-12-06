@@ -17,9 +17,8 @@ import sys
 import xml.etree.ElementTree as etree
 from copy import deepcopy
 from rdflib import Namespace, RDF
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-from mods2json import mods2rdf
-from mapping import MAP
+from .mods2json import mods2rdf
+from .mapping import MAP
 from elasticsearch import Elasticsearch
 
 DC = Namespace("http://purl.org/dc/elements/1.1/")

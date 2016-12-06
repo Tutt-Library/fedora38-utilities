@@ -1,4 +1,7 @@
 *.swp
 *.pyc
+build/*
+dist/*
 instance*
 __pycache__*
+*.egg-info*
