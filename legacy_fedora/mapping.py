@@ -63,6 +63,7 @@ MAP = {"mappings": {
                 "type": "string"
             },
             "genre": {
+                "index": "not_analyzed",
                 "type": "string"
             },
             "handle": {
@@ -73,7 +74,12 @@ MAP = {"mappings": {
                 "type": "string"
             },
             "language": {
-                "type": "string"
+                "type": "string",
+                "fields": {
+                    "keyword": {
+                        "type":"keyword"
+                    }
+                }
             },
             "note": {
                 "type": "string"
@@ -106,19 +112,19 @@ MAP = {"mappings": {
             "subject": {
                 "properties": {
                     "genre": {
-						"index": "not_analyzed",
+			"index": "not_analyzed",
                         "type": "string"
                     },
                     "geographic": {
-						"index": "not_analyzed",
+		        "index": "not_analyzed",
                         "type": "string"
                     },
                     "temporal": {
-						"index": "not_analyzed",
+		        "index": "not_analyzed",
                         "type": "string"
                     },
                     "topic": {
-						"index": "not_analyzed",
+			"index": "not_analyzed",
                         "type": "string"
                     }
                 }
@@ -133,7 +139,13 @@ MAP = {"mappings": {
                 "type": "string"
             },
             "titlePrincipal": {
-                "type": "string"
+                "type": "string",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword"
+                    }
+                }
+
             },
             "titleRaw": {
                 "type": "string",
