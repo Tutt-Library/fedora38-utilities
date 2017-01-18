@@ -4,7 +4,7 @@
 __author__ = "Jeremy Nelson"
 
 import datetime
-import forms
+from . import forms
 import json
 import mimetypes
 import os

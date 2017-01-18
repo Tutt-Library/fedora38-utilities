@@ -10,11 +10,11 @@ from elasticsearch import Elasticsearch
 from flask import Flask, render_template, request, redirect, Response
 from flask import jsonify
 from flask_socketio import SocketIO
-from forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
-from forms import MODSReplacementForm, MODSSearchForm 
-from helpers import create_mods, generate_stubs
-from indexer import Indexer
-from repairer import update_multiple
+from .forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
+from .forms import MODSReplacementForm, MODSSearchForm 
+from .helpers import create_mods, generate_stubs
+from .indexer import Indexer
+from .repairer import update_multiple
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('config.py')
