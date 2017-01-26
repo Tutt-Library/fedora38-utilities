@@ -110,7 +110,7 @@
                            for(i in data) { 
                                var message = data[i];
                                console.log(message);
-                               if(message == "Finished") {
+                               if(message.lastIndexOf("Finished", 0) === 0) {
                                     clearInterval(timer);
                                }
                                if(message.length > 0) {
@@ -118,7 +118,7 @@
                                }
                            }
                      });
-                }, 10000);
+                }, 30000);
            }
         });
         return false;

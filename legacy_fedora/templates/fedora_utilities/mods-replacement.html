@@ -4,7 +4,16 @@
 
 {% block fedora_form %}
 <div class="jumbotron">
-    <form method="POST" action="{{ url_for('mods_replacement') }}">
+    <div class="alert alert-success alert-dismissible fade hidden" role="alert" id="success-alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <strong>Success!</strong> <span id="total-changed"></span> pids updated 
+        <em id="info-old-val"></em> with <em id="info-new-val"></em>
+    </div>
+    
+    <form method="POST" action="{{ url_for('mods_replacement') }}" onsubmit="event.preventDefault(); return RunReplacementJob()"
+     id="replace-form">
     <p>Form allows for batch updating of MODS metadata</p>
         <div class="row">
             <section class="col-md-3">
@@ -41,7 +50,7 @@
         </div>
         <div class="form-group">
             <button class="btn btn-warning" type="reset">Reset form</button>
-            <button class="btn btn-primary" type="submit">Replace values</button>
+            <button class="btn btn-primary" type="submit" >Replace values</button>
         </div>
     </form>
 </div>
@@ -125,6 +134,7 @@
                     selectPid.attr('value', pid);
                     $("#" + ui_id).append(item);
                 }
+                $("#old_value").val($("#query").val());
             }
         });
     }
@@ -141,6 +151,26 @@
     function ResetSearch() {
         $("#results-col-1").empty();
         $("#results-col-2").empty();
+    }
+
+    function RunReplacementJob() {
+        var form = $("#replace-form");
+        var url = form.attr('action');
+        $.ajax({
+            url: url,
+            data: form.serialize(),
+            type: form.attr('method'),
+            success: function (result) {
+                $("#info-old-val").val($("#old_value").val());
+                $("#info-new-val").val($("#new_value").val());
+                form.trigger('reset');
+                $("#total-changed").val(result['total']);
+                $("#success-alert").removeClass("hidden");
+                $("#success-alert").addClass("show");
+            }
+        });
+        return
+        // {{ url_for('mods_replacement') }}
     }
 
     function SelectAll(bool) {

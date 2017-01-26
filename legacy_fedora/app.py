@@ -4,6 +4,7 @@
 __author__ = "Jeremy Nelson"
 
 import json
+import time
 import threading
 
 from elasticsearch import Elasticsearch
@@ -49,7 +50,10 @@ class RepairerThread(threading.Thread):
         self.new_value = kwargs.get('new_value')
         
     def run(self):
-        
+        update_multiple(pid_list=self.pid_listing, 
+            xpath=self.xpath,
+            old_value=self.old_value,
+            new_value=self.new_value)
         return
 
 @app.route("/")
@@ -78,7 +82,12 @@ def add_stub():
 
 @app.route("/index/status")
 def indexing_status():
-    if len(BACKEND_THREAD.indexer.messages) > 0:
+    if BACKEND_THREAD is None:
+        # Check in 15 seconds
+        time.sleep(15)
+        if BACKEND_THREAD is None:
+            msg = "Finished, Indexer no longer active"
+    elif len(BACKEND_THREAD.indexer.messages) > 0:
         msg = BACKEND_THREAD.indexer.messages.pop(0)
     else:
         msg = "Finished"
@@ -122,8 +131,7 @@ def mods_replacement():
         xpath = replace_form.select_xpath.data
         old_value = replace_form.old_value.data
         new_value = replace_form.new_value.data
-            
-        return "Submitted {}".format(pid_list)
+        return jsonify({"total": len(pid_listing)})
     return render_template('fedora_utilities/mods-replacement.html',
         replace_form=replace_form,
         search_form=search_form)
@@ -137,24 +145,25 @@ def search_pids():
         found_pids = []
         query = search_form.query.data
         facet = search_form.facet.data
+        dsl = {"_source": ["pid"]}
         if facet.startswith("none"):
-            search_results = es.search(q=query, 
-                index='repository',
-                fields=['pid',],
-                size=50)
+            dsl["query"] = {
+                "match": {
+                    "_all": query
+                }    
+            }
         else:
             dsl = {
                 "query": {
                     "term": { facet: query }
                 }
             }
-            search_results = es.search(body=dsl,
-                index='repository', 
-                fields=['pid',],
+        search_results = es.search(body=dsl, 
+                index='repository',
                 size=50)
         for hit in search_results.get('hits', {})\
             .get('hits', []):
-            pid = hit.get('fields', {}).get('pid')
+            pid = hit.get('_source', {}).get('pid')
             found_pids.append(pid)
         return jsonify({
             "pids": found_pids, 
