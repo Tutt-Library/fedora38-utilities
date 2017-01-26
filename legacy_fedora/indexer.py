@@ -74,7 +74,7 @@ class Indexer(object):
         self.logger = logging.getLogger(__file__)
         self.messages = []
 
-        self.rest_url = kwargs.get("rest_url", app.config.get('FEDORA_URL'))
+        self.rest_url = kwargs.get("rest_url", app.config.get('REST_URL'))
         self.ri_search = kwargs.get("ri_url", app.config.get('RI_URL'))
         self.skip_pids = []
         # Set defaults if don't exist
