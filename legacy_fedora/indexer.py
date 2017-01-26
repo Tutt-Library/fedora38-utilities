@@ -421,10 +421,12 @@ WHERE {{
             #    return False
             mods_id = mods_index_result
             if mods_id is not None:
-                logging.info(
-                    "Indexed PID=%s, ES-id=%s",
+                msg = "Indexed PID={0}, ES-id={1} Message Queue={2}".format(
                     pid,
-                    mods_id.get('_id'))
+                    mods_id.get('_id'),
+                    len(self.messages))
+                logging.info(msg)
+                self.messages.append(msg)
                 return True
         return False
 

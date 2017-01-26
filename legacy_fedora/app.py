@@ -82,7 +82,8 @@ def indexing_status():
         msg = BACKEND_THREAD.indexer.messages.pop(0)
     else:
         msg = "Finished"
-    socketio.emit('status event', {"message": msg})
+    return jsonify({"message": msg})
+    #socketio.emit('status event', {"message": msg})
 
 @app.route("/index/pid", methods=["POST"])
 def index_pid():

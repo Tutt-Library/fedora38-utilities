@@ -1,5 +1,6 @@
 *.swp
 *.pyc
+nohup.out
 build/*
 dist/*
 instance*
