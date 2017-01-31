@@ -66,16 +66,22 @@ class Indexer(object):
 
 		"""
         app = kwargs.get("app")
-        self.auth = kwargs.get("auth", app.config.get('FEDORA_AUTH'))
-        self.elastic = kwargs.get("elasticsearch", 
-            app.config.get('ELASTIC_SEARCH'))
+        self.auth = kwargs.get("auth")
+        if app and self.auth is None:
+            self.auth = app.config.get('FEDORA_AUTH')
+        self.elastic = kwargs.get("elasticsearch")
+        if app and self.elastic is None:
+            self.elastic = app.config.get('ELASTIC_SEARCH')
         if not isinstance(self.elastic, Elasticsearch):
             self.elastic = Elasticsearch(hosts=self.elastic)
         self.logger = logging.getLogger(__file__)
         self.messages = []
-
-        self.rest_url = kwargs.get("rest_url", app.config.get('REST_URL'))
-        self.ri_search = kwargs.get("ri_url", app.config.get('RI_URL'))
+        self.rest_url = kwargs.get("rest_url")
+        if app and self.rest_url is None:
+            self.rest_url = app.config.get('REST_URL')
+        self.ri_search = kwargs.get("ri_url")
+        if app and self.ri_search is None:
+            self.ri_search = app.config.get('RI_URL')
         self.skip_pids = []
         # Set defaults if don't exist
         if not self.auth:
