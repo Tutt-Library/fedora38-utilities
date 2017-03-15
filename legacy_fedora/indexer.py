@@ -129,6 +129,7 @@ class Indexer(object):
                mime_type.startswith("video/mp4") or\
                mime_type.startswith("image/jpeg") or\
                mime_type.startswith("image/jp2") or\
+               mime_type.startswith("audio/wav") or\
                mime_type.startswith("audio/x-wav") or\
                mime_type.startswith("application/octet-stream"):
                 add_ds = True
@@ -313,6 +314,7 @@ WHERE {{
             logging.info("Re-indexed PID=%s, ES-id=%s", pid, mods_id)
             return True
 
+
     def incremental_index(self, **kwargs):
         """Performs a incremental index based on date"""
         offset = kwargs.get("offset", 0)
@@ -407,31 +409,31 @@ WHERE {{
         # Used for browsing
         if parent:
             mods_body['parent'] = parent
-        if not self.__reindex_pid__(pid, mods_body):
-            # Add Datasteams to Index
-            # Extract Islandora Content Models from REL-EXT 
-            if "islandora:compoundCModel" in mods_body["content_models"]:
-                mods_body["datastreams"] = self.__index_compound__(pid)
-            else: 
-                mods_body["datastreams"] = self.__add_datastreams__(pid)
-            #try:
-            mods_index_result = self.elastic.index(
-                index="repository",
-                doc_type="mods",
-                body=mods_body)
-            #except:
-            #    err_title = "Error indexing {},\nError {}".format(pid,
-			#        sys.exc_info()[0])
-            #    logging.error(err_title)
-            #    print(err_title)
-            #    return False
-            mods_id = mods_index_result
-            if mods_id is not None:
-                msg = "Indexed PID={0}, ES-id={1}".format(
-                    pid,
-                    mods_id.get('_id'))
-                logging.info(msg)
-                return True
+        # Delete any existing document for the pid
+        delete_existing_dsl = {
+            "query": {
+                "term": {"pid": pid}
+            }
+        }
+        self.elastic.delete_by_query(body=delete_existing_dsl,
+            index='repository')
+        # Add Datasteams to Index
+        # Extract Islandora Content Models from REL-EXT 
+        if "islandora:compoundCModel" in mods_body["content_models"]:
+            mods_body["datastreams"] = self.__index_compound__(pid)
+        else: 
+            mods_body["datastreams"] = self.__add_datastreams__(pid)
+        mods_index_result = self.elastic.index(
+            index="repository",
+            doc_type="mods",
+            body=mods_body)
+        mods_id = mods_index_result
+        if mods_id is not None:
+            msg = "Indexed PID={0}, ES-id={1}".format(
+                pid,
+                mods_id.get('_id'))
+            logging.info(msg)
+            return True
         return False
 
     def index_collection(self, pid, parents=[]):
