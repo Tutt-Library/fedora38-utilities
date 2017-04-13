@@ -131,6 +131,7 @@ class Indexer(object):
                mime_type.startswith("image/jp2") or\
                mime_type.startswith("audio/wav") or\
                mime_type.startswith("audio/x-wav") or\
+               mime_type.startswith("audio/vnd.wave") or\
                mime_type.startswith("application/octet-stream"):
                 add_ds = True
             if add_ds:
