@@ -308,6 +308,42 @@ def extract_title(mods_xml):
                 title_entities.append(output)
     return title_entities
 
+def load_edit_form(config, pid):
+    mods_url = "{}{}/datastreams/MODS/content".format(
+        config.get("REST_URL"),
+        pid)
+    mods_result = requests.get(mods_url,
+        auth=config.get("FEDORA_AUTH"))
+    mods_xml = etree.XML(mods_result.text)
+    creators, contributors = [], []
+    for name in mods_xml.findall("mods:name[@type='personal']", DEFAULT_NS):
+        role = name.find("mods:role/mods:roleTerm", DEFAULT_NS)
+        name_part = name.find("mods:namePart", DEFAULT_NS)
+        if name_part.text is not None and len(name_part.text) > 0:
+            if role.text.startswith("creator"):
+                creators.append(name_part.text)
+            if role.text.startswith("contributor"):
+                contributors.append(name_part.text)
+    date_created=mods_xml.find("mods:originInfo/mods:dateCreated",
+        DEFAULT_NS)
+    type_of_resources = []
+    for row in mods_xml.findall("mods:typeOfResource", DEFAULT_NS):
+        type_of_resources.append(row.text)
+    abstract = mods_xml.find("mods:abstract", DEFAULT_NS)
+    admin_notes = []
+    for row in mods_xml.findall("mods:note[@type='admin']", DEFAULT_NS):
+        admin_notes.append(row.text)
+    edit_form = forms.EditFedoraObjectFromTemplate(csrf_enabled=False,
+        title=mods_xml.find("mods:titleInfo/mods:title", DEFAULT_NS).text,
+        admin_notes=admin_notes,
+        date_created=date_created.text,
+        abstract=abstract.text,
+        pid=pid,
+        creators=creators,
+        contributors=contributors,
+        type_of_resources=type_of_resources) 
+    return edit_form
+
 
 # SPARQL Queries
 NEWEST_SPARQL = """SELECT DISTINCT ?s ?date

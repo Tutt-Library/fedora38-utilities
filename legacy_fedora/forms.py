@@ -1,8 +1,9 @@
 __author__ = "Jeremy Nelson"
 import datetime
-from flask_wtf import Form
+from flask_wtf import FlaskForm as Form
 from wtforms import SelectField, StringField, TextAreaField
 from wtforms.fields.html5 import DateField
+from wtforms.fields import FieldList
 from wtforms import validators
 
 DIGITAL_ORIGIN = [('born digital','born digital'),
@@ -154,19 +155,22 @@ PUBLICATION_PLACE = 'Colorado Springs, Colorado'
 SEARCH_INDICES = [('li-testdocker1', 'Test Environment (li-testdocker1)'),
                   ('li-docker1', 'Production Environment (li-docker1)')]
 
-class AddFedoraObjectFromTemplate(Form):
-    admin_note = TextAreaField('Administrative Notes',
-                               validators=[validators.length(max=1500)])
+class FedoraObjectFromTemplate(Form):
+    abstract = TextAreaField("Abstract",
+        validators=[validators.length(max=1500)])
+    admin_notes = FieldList(TextAreaField('Administrative Notes',
+                               validators=[validators.length(max=1500)]),
+        min_entries=1)
     alt_title = StringField('Alternative Title')
     collection_pid = StringField("PID of Parent Collection",
         validators=[validators.required(), validators.length(max=20)])
     content_models = SelectField('Islandora Content Model',
                                   choices=CONTENT_MODELS,
                                   default='compoundCModel')
-    contributors = StringField("Contributors")
-    corporate_contributors = StringField("Corporate Contributors")
-    corporate_creators = StringField("Corporate Creators")
-    creators = StringField("Creators")
+    contributors = FieldList(StringField("Contributors"), min_entries=1)
+    corporate_contributors = FieldList(StringField("Corporate Contributors"), min_entries=1)
+    corporate_creators = FieldList(StringField("Corporate Creators"), min_entries=1)
+    creators = FieldList(StringField("Creators"), min_entries=1)
     date_created = StringField('Date Created')
     digital_origin = SelectField('Digital Origin',
         choices=DIGITAL_ORIGIN)
@@ -182,8 +186,7 @@ class AddFedoraObjectFromTemplate(Form):
         choices=MARC_FREQUENCY)
     genre = SelectField('Genre',
         choices=GENRE)
-    languages = SelectField('Languages', choices=LANGUAGES)
-    number_objects = StringField('Number of stub records', default=1)
+    languages = FieldList(SelectField('Languages', choices=LANGUAGES), min_entries=1)
     organizations = StringField("Organizations",
                                 validators=[validators.optional(), 
                                             validators.length(max=255)],
@@ -197,7 +200,13 @@ class AddFedoraObjectFromTemplate(Form):
     subject_topics = StringField('Subject -- Topic')
     title = StringField('Title',
             validators=[validators.length(max=120), validators.optional()])
-    type_of_resource = StringField('Type of Resource')
+    type_of_resources = FieldList(StringField('Type of Resource'), min_entries=1)
+
+class AddFedoraObjectFromTemplate(FedoraObjectFromTemplate):
+    number_objects = StringField('Number of stub records', default=1)
+
+class EditFedoraObjectFromTemplate(FedoraObjectFromTemplate):
+    pid = StringField("PID")
 
 class IndexRepositoryForm(Form):
     index_choice = SelectField('Incremental or Full',

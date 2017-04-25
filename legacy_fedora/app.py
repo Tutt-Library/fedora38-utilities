@@ -12,8 +12,9 @@ from flask import Flask, render_template, request, redirect, Response
 from flask import jsonify, flash, url_for
 from flask_socketio import SocketIO
 from .forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
-from .forms import MODSReplacementForm, MODSSearchForm 
-from .helpers import create_mods, generate_stubs
+from .forms import MODSReplacementForm, MODSSearchForm
+from .forms import EditFedoraObjectFromTemplate 
+from .helpers import create_mods, generate_stubs, load_edit_form
 from .indexer import Indexer
 from .repairer import update_multiple
 
@@ -24,6 +25,7 @@ socketio = SocketIO(app)
 
 ACTIVE_MSGS = []
 BACKEND_THREAD = None
+MODS_NS = {'mods': 'http://www.loc.gov/mods/v3'}
 
 class IndexerThread(threading.Thread):
 
@@ -79,6 +81,11 @@ def add_stub():
     return render_template('fedora_utilities/batch-ingest.html',
         ingest_form=ingest_form)
 
+@app.route("/edit/<path:pid>", methods=["GET", "POST"])
+def edit_mods(pid):
+    edit_form = load_edit_form(app.config, pid)
+    return render_template('fedora_utilities/batch-ingest.html',
+        ingest_form=edit_form)
 
 @app.route("/index/status")
 def indexing_status():

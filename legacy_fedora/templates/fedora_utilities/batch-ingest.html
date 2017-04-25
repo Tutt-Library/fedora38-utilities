@@ -19,10 +19,18 @@
                         {{ ingest_form.collection_pid.label }}
                         {{ ingest_form.collection_pid(class_='form-control') }}
                     </div>
+                    {% if ingest_form.number_objects %}
                     <div class="form-group">
                         {{ ingest_form.number_objects.label }}
                         {{ ingest_form.number_objects(class_='form-control') }}
                     </div>
+                    {% endif %}
+                    {% if ingest_form.pid %}
+                    <div class="form-group">
+                        {{ ingest_form.pid.label }}
+                        {{ ingest_form.pid(class_='form-control') }}
+                    </div>
+                    {% endif %}
                 </section>
                 <section class="col-md-6">
                     <div class="form-group">
@@ -44,16 +52,28 @@
                 </section>
             </div>
             <div class="row">
+                <section class="col-md-8">
+                    <div class="form-group">
+                        {{ ingest_form.abstract.label }}
+                        {{ ingest_form.abstract(class_='form-control', rows=5) }}
+                    </div>
+                </section>
+            </div>
+            <div class="row">
                 <section class="col-md-6">
                     <div class="form-group">
                         {{ ingest_form.creators.label }} <a href="#" class="tag tag-primary" 
                             onclick="NewInput(this, 'creators')">+</a>
-                        {{ ingest_form.creators(class_='form-control') }}
+                        {% for row in ingest_form.creators %}
+                        {{ row(class_='form-control') }}
+                        {% endfor %}
                     </div>
                     <div class="form-group">
                         {{ ingest_form.corporate_creators.label }} <a href="#" class="tag tag-primary" 
                             onclick="NewInput(this, 'corporate_creators')">+</a>
-                        {{ ingest_form.corporate_creators(class_='form-control') }}
+                        {% for row in ingest_form.corporate_creators %}
+                            {{ row(class_='form-control') }}
+                        {% endfor %}
                     </div>
 
                 </section>
@@ -61,12 +81,16 @@
                     <div class="form-group">
                         {{ ingest_form.contributors.label }} <a href="#" class="tag tag-primary" 
                             onclick="NewInput(this, 'contributors')">+</a>
-                        {{ ingest_form.contributors(class_='form-control') }}
+                        {% for row in ingest_form.contributors %}
+                            {{ row(class_='form-control') }}
+                        {% endfor %}
                     </div>
                     <div class="form-group">
                         {{ ingest_form.corporate_contributors.label }} <a href="#" class="tag tag-primary" 
                             onclick="NewInput(this, 'corporate_contributors')">+</a>
-                        {{ ingest_form.corporate_contributors(class_='form-control') }}
+                        {% for row in ingest_form.corporate_contributors %}
+                        {{ row(class_='form-control') }}
+                        {% endfor %}
                     </div>
                 </section>
             </div>
@@ -83,8 +107,10 @@
                 </section>
                 <section class="col-md-6">
                     <div class="form-group">
-                        {{ ingest_form.type_of_resource.label }}
-                        {{ ingest_form.type_of_resource(class_='form-control') }}
+                        {{ ingest_form.type_of_resources.label }}
+                        {% for row in ingest_form.type_of_resources %}
+                            {{ row(class_='form-control') }}
+                        {% endfor %}
                     </div>
                     <div class="form-group">
                         {{ ingest_form.genre.label }}
@@ -116,8 +142,10 @@
                 </section>
                 <section class="col-md-6">
                     <div class="form-group">
-                        {{ ingest_form.admin_note.label }}
-                        {{ ingest_form.admin_note(class_='form-control', rows=4) }}
+                        {{ ingest_form.admin_notes.label }}
+                        {% for row in ingest_form.admin_notes %}
+                        {{ row(class_='form-control', rows=4) }}
+                        {% endfor %}
                     </div>
                 </section>
             </div>
@@ -142,7 +170,9 @@
                 <section class="col-md-6">
                     <div class="form-group">
                         {{ ingest_form.languages.label }}
-                        {{ ingest_form.languages(class_='form-control') }}
+                        {% for row in  ingest_form.languages %}
+                            {{row(class_='form-control') }}
+                        {% endfor %}
                      </div>
                 </section>
                 <section class="col-md-6">
