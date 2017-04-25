@@ -26,6 +26,9 @@ class RepairMODSError(Exception):
     def __str__(self):
         return "Error with {}'s MODS\n{}".format(self.pid, self.message)
 
+def add_mods(**kwargs):
+    """Takes a pid and a populated MODS element"""
+
 def update_mods(**kwargs):
     """Function takes pid, field, and old_value, replaces with
 	a new_value.

@@ -9,7 +9,7 @@ import threading
 
 from elasticsearch import Elasticsearch
 from flask import Flask, render_template, request, redirect, Response
-from flask import jsonify
+from flask import jsonify, flash, url_for
 from flask_socketio import SocketIO
 from .forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
 from .forms import MODSReplacementForm, MODSSearchForm 
@@ -96,8 +96,15 @@ def indexing_status():
 
 @app.route("/index/pid", methods=["POST"])
 def index_pid():
-    pid = request.args.get("pid")
-    return jsonify({"message": "Indexed PID"})
+    pid = request.form.get("pid")
+    search_index = request.form.get("indices")
+    indexer = Indexer(app=app, 
+        elasticsearch=search_index)
+    ancestors = indexer.__get_ancestry__(pid)
+    ancestors.reverse()
+    indexer.index_pid(pid, ancestors[-1], ancestors)
+    flash("Indexed PID {} in index {}".format(pid, search_index))
+    return redirect(url_for('index_repository'))
 
 @app.route("/index", methods=["POST", "GET"])
 def index_repository():

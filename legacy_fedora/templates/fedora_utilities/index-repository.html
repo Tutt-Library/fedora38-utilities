@@ -2,6 +2,16 @@
 
 {% block fedora_form %}
 <div class="jumbotron">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-warning">
+            <strong>Message!</strong>
+            {% for msg in messages %}
+                <p>{{ msg|safe }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
     <h2>Index Repository</h2>
     <p>Index Fedora repository into Elastic Search</p>
     <form method="POST" action="{{ url_for('index_repository') }}" id="index-form">
@@ -42,24 +52,24 @@
     <hr>
     <h3>Index a single PID</h3>
     <p>Index (or re-index) a single PID</p>
-    <form method="POST" action="{{ url_for('index_pid') }}">
+    <form method="POST" action="{{ url_for('index_pid') }}" id="single-index-form">
         <div class="row">
         <div class="col-md-4">
                 <div class="form-group">
-                  {{ index_form.index_choice.label }}
-                  {{ index_form.index_choice(class_="form-control", id='single-pid-index') }} 
+                  {{ index_form.indices.label }}
+                  {{ index_form.indices(class_="form-control", id='single-pid-index') }} 
                 </div>
         </div>
         <div class="col-md-4">
             <div class="form-group">
                 <label>PID</label>
-                <input class="form-control" id="pid"></input>
+                <input class="form-control" id="pid" name="pid"></input>
             </div>
         </div>
         <div class="col-md-2">
             <div class="form-group">
                 <label>&nbsp;</label>
-                <button class="btn btn-primary" onclick="IndexPid()">Index</button>
+                <button class="btn btn-primary" type="submit">Index</button>
             </div>
         </div>
         </div>
@@ -123,6 +133,14 @@
         });
         return false;
     });
+
+    {#$("#single-index-form").submit(function() {
+        console.log("In Single Index Form");
+        var url = $(this).attr('action');
+        console.log("Data " + $(this).serialize());
+
+        return false;
+    });#}
 
     function DownloadJob() {
         console.log("Download job");
