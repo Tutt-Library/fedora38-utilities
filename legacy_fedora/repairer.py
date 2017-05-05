@@ -45,7 +45,7 @@ def update_mods(**kwargs):
     old_value = kwargs.get("old")
     new_value = kwargs.get("new")
     start = datetime.datetime.utcnow()
-    rest_url = kwargs.get("rest_url", app.config.get("FEDORA_URL"))
+    rest_url = kwargs.get("rest_url", app.config.get("REST_URL"))
     auth = kwargs.get("auth", app.config.get("FEDORA_AUTH"))
     backup = kwargs.get("backup", False)
     mods_base_url = "{}{}/datastreams/MODS".format(

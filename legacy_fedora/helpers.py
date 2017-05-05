@@ -177,12 +177,12 @@ def create_stubs(**kwargs):
     auth = config.get('FEDORA_AUTH')
     pids = []
     for i in range(0, int(num_objects)):
-        new_pid = __new_pid__(config.get("FEDORA_URL"), 
+        new_pid = __new_pid__(config.get("REST_URL"), 
             config.get("FEDORA_AUTH"))
         # Add a label to new PID using the title
         params = urllib.parse.urlencode({"label": title})
         add_label_url = "{0}{1}?{2}".format(
-            config.get('FEDORA_URL'),
+            config.get('REST_URL'),
             new_pid,
             params)
         add_label_result = requests.put(add_label_url,
@@ -193,7 +193,7 @@ def create_stubs(**kwargs):
             "dsLabel": "MODS",
             "mimeType": "text/xml"})
         new_mods_url = "{0}{1}/datastreams/MODS?{2}".format(
-            config.get('FEDORA_URL'),
+            config.get('REST_URL'),
             new_pid,
             params)
         mods_ds_result = requests.post(new_mods_url,
@@ -211,7 +211,7 @@ def create_stubs(**kwargs):
             "dsLabel": "RELS-EXT",
             "mimeType": "application/rdf+xml"})
         rels_url = "{0}{1}/datastreams/RELS-EXT?{2}".format(
-            config.get('FEDORA_URL'),
+            config.get('REST_URL'),
             new_pid,
             params)
         rels_result = requests.post(rels_url,
