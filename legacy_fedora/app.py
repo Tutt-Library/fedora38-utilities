@@ -13,8 +13,8 @@ from flask import jsonify, flash, url_for
 from flask_socketio import SocketIO
 from .forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
 from .forms import MODSReplacementForm, MODSSearchForm
-from .forms import EditFedoraObjectFromTemplate 
-from .helpers import create_mods, generate_stubs, load_edit_form
+from .forms import EditFedoraObjectFromTemplate, LoadMODSForm 
+from .helpers import create_mods, generate_stubs, load_edit_form, build_mods
 from .indexer import Indexer
 from .repairer import update_multiple
 
@@ -81,10 +81,22 @@ def add_stub():
     return render_template('fedora_utilities/batch-ingest.html',
         ingest_form=ingest_form)
 
+@app.route("/edit/", methods=["GET", "POST"])
 @app.route("/edit/<path:pid>", methods=["GET", "POST"])
-def edit_mods(pid):
-    edit_form = load_edit_form(app.config, pid)
-    return render_template('fedora_utilities/batch-ingest.html',
+def edit_mods(pid=None):
+    load_form, edit_form = None, None
+    if pid is None:
+        load_form = LoadMODSForm()
+        if load_form.validate_on_submit():
+            return redirect(url_for("edit_mods", pid=load_form.pid.data))
+    else:
+        edit_form = load_edit_form(app.config, pid)
+        if request.method.startswith("POST"):
+            mods_xml = build_mods(edit_form)
+            return mods_xml
+    return render_template('fedora_utilities/mods-edit.html',
+        load_form=load_form,
+        pid=pid,
         ingest_form=edit_form)
 
 @app.route("/index/status")

@@ -1,18 +1,30 @@
 {% extends 'fedora_utilities/app.html' %}
 {% from "fedora_utilities/mods-form.html" import mods_form with context %}
 
-
 {% block fedora_form %}
    <div class="jumbotron">
        <a name="ingest"></a>
-       <h2>Batch Creator</h2>
+       <h2>Edit MODS</h2>
         <div class="alert alert-warning hidden-xs-up" id="batch-status">
-            <h4 class="alert-heading">Running Batch Job &hellip;</h4>
+            <h4 class="alert-heading">Running Edit Job &hellip;</h4>
         </div>
-        {{ mods_form(url_for('add_stub'), 'Add Stub Record(s)') }}
+        {% if load_form %}
+            <form action="{{ url_for('edit_mods') }}" method="POST">
+            {{ load_form.csrf_token }}
+            <div class="row">
+                <section class="col-md-8">
+                    {{ load_form.pid.label }}
+                    {{ load_form.pid(class_='form-control') }}
+                    <input type="submit" value="Load MODS" class="btn btn-primary"></input>
+
+                </section>
+            </div>
+            </form>
+        {% else %}
+        {{ mods_form(url_for('edit_mods', pid=pid), 'Update MODS') }}
+        {% endif %}
    </div>
 {% endblock %}
-
 
 {% block more_js %}
 <script>
@@ -21,11 +33,11 @@
         last_field.after("<br><input name='" + field_id + "' type='text', class='form-control'></input>");
     }
 
-    $("#batch-form").submit(function() {
+    {#$("#batch-form").submit(function() {
         var url = $(this).attr('action');
         $("#batch-form").addClass("hidden-xs-up");
         $("#batch-status").removeClass("hidden-xs-up");
-
+        console.log("Submit url " + url + " Method=" + $(this).attr('method'));
         $.ajax({
             data: $(this).serialize(),
             type: $(this).attr('method'),
@@ -33,14 +45,12 @@
             success: function(response) {
                $("#batch-status").removeClass("alert-warning");
                $("#batch-status").addClass("alert-success");
-               $("#batch-status h4").text("Success! Batch Run Completed");
-               for(i in response) {
-                var msg = "PID " + response[i]["pid"] + " added on " + response[i]["completed"];
-                $("#batch-status").append("<p>" + msg + "</p>");
-               }
+               $("#batch-status h4").text("Success! MODS Completed");
             }
         });
         return false;
-    });
+    });#}
 </script>
+
 {% endblock %}
+

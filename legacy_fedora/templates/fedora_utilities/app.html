@@ -33,6 +33,10 @@
         <i class="fa fa-hourglass" aria-hidden="true"></i>
         <a href="{{ url_for('index_repository') }}">Index Repository</a>
     </li>
+    <li class="list-group-item {% if "edit" in request.path %} bg-warning{% endif %}">
+        <i class="fa fa-pencil-square" aria-hidden="true"></i>
+        <a href="{{ url_for('edit_mods') }}">Edit PID's MODS</a>
+    </li>
     <li class="list-group-item {% if request.path.endswith("replacement") %} bg-warning{% endif %}">
         <i class="fa fa-search" aria-hidden="true"></i>
         <a href="{{ url_for('mods_replacement') }}">MODS Replacement</a>

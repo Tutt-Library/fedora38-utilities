@@ -1,0 +1,230 @@
+{% macro mods_form(action, submit_label) %} 
+  <form id="batch-form" 
+        method="POST" action="{{ action }}" 
+        id="ingest_form" enctype="multipart/form-data" >
+      {{ ingest_form.csrf_token }}
+      <div class="row">
+          <section class="col-md-6">
+              <div class="form-group {% if ingest_form.collection_pid.errors %}alert alert-danger{% endif %}">
+                {% for error in ingest_form.collection_pid.errors %}
+                  ERROR: {{ error }}
+                {% endfor %}
+                  {{ ingest_form.collection_pid.label }}
+                  {{ ingest_form.collection_pid(class_='form-control') }}
+              </div>
+              {% if ingest_form.number_objects %}
+              <div class="form-group">
+                  {{ ingest_form.number_objects.label }}
+                  {{ ingest_form.number_objects(class_='form-control') }}
+              </div>
+              {% endif %}
+              {% if ingest_form.pid %}
+              <div class="form-group">
+                  {{ ingest_form.pid.label }}
+                  {{ ingest_form.pid(class_='form-control') }}
+              </div>
+              {% endif %}
+          </section>
+          <section class="col-md-6">
+              <div class="form-group">
+                  {{ ingest_form.content_models.label }}
+                  {{ ingest_form.content_models(class_='form-control') }}
+              </div>
+          </section>
+      </div>
+      <div class="row">
+          <section class="col-md-8">
+              <div class="form-group">
+                 {{ ingest_form.title.label }}
+                 {{ ingest_form.title(class_='form-control') }}   
+              </div> 
+              <div class="form-group">
+                 {{ ingest_form.alt_title.label }}
+                 {{ ingest_form.alt_title(class_='form-control') }}   
+              </div> 
+          </section>
+      </div>
+      <div class="row">
+          <section class="col-md-8">
+              <div class="form-group">
+              {{ ingest_form.sub_title.label }}
+              {{ ingest_form.sub_title(class_='form-control') }}
+              </div>
+          </seciton>
+      </div>
+      <div class="row">
+          <section class="col-md-8">
+              <div class="form-group">
+                  {{ ingest_form.abstract.label }}
+                  {{ ingest_form.abstract(class_='form-control', rows=5) }}
+              </div>
+          </section>
+      </div>
+      <div class="row">
+          <section class="col-md-6">
+              <div class="form-group">
+                  {{ ingest_form.creators.label }} <a href="#" class="tag tag-primary" 
+                      onclick="NewInput(this, 'creators')">+</a>
+                  {% for row in ingest_form.creators %}
+                  {{ row(class_='form-control') }}
+                  {% endfor %}
+              </div>
+              <div class="form-group">
+                  {{ ingest_form.corporate_creators.label }} <a href="#" class="tag tag-primary" 
+                      onclick="NewInput(this, 'corporate_creators')">+</a>
+                  {% for row in ingest_form.corporate_creators %}
+                      {{ row(class_='form-control') }}
+                  {% endfor %}
+              </div>
+
+          </section>
+          <section class="col-md-6">
+              <div class="form-group">
+                  {{ ingest_form.contributors.label }} <a href="#" class="tag tag-primary" 
+                      onclick="NewInput(this, 'contributors')">+</a>
+                  {% for row in ingest_form.contributors %}
+                      {{ row(class_='form-control') }}
+                  {% endfor %}
+              </div>
+              <div class="form-group">
+                  {{ ingest_form.corporate_contributors.label }} <a href="#" class="tag tag-primary" 
+                      onclick="NewInput(this, 'corporate_contributors')">+</a>
+                  {% for row in ingest_form.corporate_contributors %}
+                  {{ row(class_='form-control') }}
+                  {% endfor %}
+              </div>
+          </section>
+      </div>
+      <div class="row">
+          <section class="col-md-6">
+              <div class="form-group">
+                  {{ ingest_form.date_created.label }}
+                  {{ ingest_form.date_created(class_='form-control') }}
+              </div>
+              <div class="form-group">
+                  {{ ingest_form.digital_origin.label }}
+                  {{ ingest_form.digital_origin(class_='form-control') }}
+              </div>
+          </section>
+          <section class="col-md-6">
+              <div class="form-group">
+                  {{ ingest_form.type_of_resources.label }}
+                  {% for row in ingest_form.type_of_resources %}
+                      {{ row(class_='form-control') }}
+                  {% endfor %}
+              </div>
+              <div class="form-group">
+                  {{ ingest_form.genre.label }}
+                  {{ ingest_form.genre(class_='form-control') }}
+              </div>
+          </section> 
+      </div>
+      <div class="row">
+          <section class="col-md-6">
+              <div class="form-group">
+                  {{ ingest_form.description.label }}
+                  {{ ingest_form.description(class_='form-control', rows=5) }}
+              </div>
+          </section>
+          <section class="col-md-6">
+              <div class="form-group">
+                  {{ ingest_form.rights_statement.label }}
+                  {{ ingest_form.rights_statement(class_='form-control', rows=4) }}
+              </div>
+          </section>
+
+      </div>
+      <div class="row">
+          <section class="col-md-6">
+              <div class="form-group">
+                  {{ ingest_form.extent.label }}
+                  {{ ingest_form.extent(class_='form-control', rows=4) }}
+               </div>
+          </section>
+          <section class="col-md-6">
+              <div class="form-group">
+                  {{ ingest_form.admin_notes.label }}
+                  {% for row in ingest_form.admin_notes %}
+                  {{ row(class_='form-control', rows=4) }}
+                  {% endfor %}
+              </div>
+          </section>
+      </div>
+    <div class="row">
+        <section class="col-md-6">
+            <div class="form-group">
+                {{ ingest_form.publisher.label }}
+                {{ ingest_form.publisher(class_='form-control') }}
+            </div>
+        </section>
+         <section class="col-md-6">
+            <div class="form-group">
+                {{ ingest_form.publication_place.label }}
+                {{ ingest_form.publication_place(class_='form-control') }}
+            </div>
+
+        </section>
+    </div> 
+    <div class="row">
+          <section class="col-md-6">
+              <div class="form-group">
+                  {{ ingest_form.organizations.label }}
+                  {{ ingest_form.organizations(class_='form-control') }}
+              </div>
+          </section>
+          <section class="col-md-6">
+              <div class="form-group">
+                  {{ ingest_form.frequency.label }}
+                  {{ ingest_form.frequency(class_='form-control') }}
+                  <strong>OR</strong><br>
+                  {{ ingest_form.frequency_free_form(class_='form-control')}}
+              </div>
+          </section>
+      </div>
+       <div class="row">
+          <section class="col-md-6">
+              <div class="form-group">
+                  {{ ingest_form.languages.label }}
+                  {% for row in  ingest_form.languages %}
+                      {{row(class_='form-control') }}
+                  {% endfor %}
+               </div>
+          </section>
+          <section class="col-md-6">
+              <div class="form-group">
+              </div>
+          </section>
+      </div>
+   
+      <div class="row">
+          <section class="col-md-6">
+              <div class="form-group">
+                  {{ ingest_form.subject_people.label }} <a href="#" class="tag tag-primary" 
+                      onclick="NewInput(this, 'subject_people')">+</a>
+                  {{ ingest_form.subject_people(class_='form-control') }}
+              </div>
+              <div class="form-group">
+                  {{ ingest_form.subject_places.label }} <a href="#" class="tag tag-primary" 
+                      onclick="NewInput(this, 'subject_places')">+</a>
+                  {{ ingest_form.subject_places(class_='form-control') }}
+              </div>
+          </section>
+          <section class="col-md-6">
+              <div class="form-group">
+                  {{ ingest_form.subject_topics.label }} <a href="#" class="tag tag-primary" 
+                      onclick="NewInput(this, 'subject_topics')">+</a>
+                  {{ ingest_form.subject_topics(class_='form-control') }}
+              </div>
+              <div class="form-group">
+                  {{ ingest_form.subject_dates.label }} <a href="#" class="tag tag-primary" 
+                      onclick="NewInput(this, 'subject_dates')">+</a>
+                  {{ ingest_form.subject_dates(class_='form-control') }}
+              </div>
+          </section>
+      </div>
+   <div class="btn-group">
+      <input type="submit" value="{{ submit_label }}" class="btn btn-lg btn-primary"></input>
+      <input type="reset" value="Reset Form" class="btn btn-lg btn-warning"></input>
+   </div>
+  </form>
+{% endmacro %}

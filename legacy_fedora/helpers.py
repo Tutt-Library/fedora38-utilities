@@ -12,10 +12,10 @@ import requests
 import shutil
 import urllib.parse
 import xml.etree.ElementTree as etree
-
+import xml.dom.minidom
 from flask import Response
 from jinja2 import Environment, FileSystemLoader
-
+from types import SimpleNamespace
 
 JINJA_ENV = Environment(loader=FileSystemLoader(
     os.path.dirname(os.path.abspath(__file__))))
@@ -23,6 +23,105 @@ JINJA_ENV = Environment(loader=FileSystemLoader(
 DEFAULT_NS = {
     "fedora_manage": "http://www.fedora.info/definitions/1/0/management/",
     "mods": 'http://www.loc.gov/mods/v3'}
+
+for key, value in DEFAULT_NS.items():
+    etree.register_namespace(key, value)
+
+def __create_name__(mods, name_str, type_, role_str):
+    if len(name_str) < 1:
+        return
+    name = etree.SubElement(mods, 
+         "mods:name", 
+         attrib={"type": type_})
+    name_part = etree.SubElement(name, "mods:namePart")
+    name_part.text = name_str
+    role = etree.SubElement(name, "mods:role")
+    role_term = etree.SubElement(role,
+        "mods:roleTerm",
+        attrib={"type": "text",
+                "authority": "marcrelator"})
+    role_term.text = role_str
+
+def __create_origin_info__(form, mods):
+    origin_info = etree.SubElement(mods, "mods:originInfo")
+    if len(form.date_created.data) > 0:
+        date_created = etree.SubElement(origin_info,
+            "mods:dateCreated",
+            attrib={"keyDate": "yes"})
+        date_created.text = form.date_created.data
+    if len(form.publisher.data) > 0:
+        publisher = etree.SubElement(origin_info,
+            "mods:publisher")
+        publisher.text = form.publisher.data
+    if len(form.publication_place.data) > 0:
+        place = etree.SubElement(origin_info,
+            "mods:place")
+        place_term = etee.SubElement(place,
+            "mods:placeTerm")
+        place_term.text = form.publication_place.data
+    if len(form.frequency.data) > 0:
+        frequency = etree.SubElement(origin_info,
+            "mods:frequency")
+        frequency.text = form.frequency.data
+
+def __create_phy_desc__(form, mods):
+    phys_desc = etree.SubElement(mods, "mods:physicalDescription")
+    if len(form.form.data) > 0:
+        form_bib = etree.SubElement(phys_desc,
+            "mods:form")
+        form_bib = form.form.data
+    if len(form.digital_origin.data) > 0:
+        dig_origin = etree.SubElement(phys_desc, "mods:digitalOrigin")
+        dig_origin.text = form.digital_origin.data
+    
+
+def __create_title__(mods, title_str, type_=None, subtitle=None):
+    title_info = etree.SubElement(mods,
+        "mods:titleInfo")
+    if type_ is not None:
+        title_info.attrib["type"] = type_
+    title = etree.SubElement(title_info,
+        "mods:title")
+    title.text = title_str
+    if subtitle is not None:
+        sub_title = etree.SubElement(title_info,
+            "mods:subTitle")
+        sub_title.text = subtitle
+
+
+def build_mods(form):
+    """Builds a MODS etree populated on WTform values"""
+    mods = etree.XML(
+        """<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" />""")
+    for row in form.admin_notes.data:
+        if len(row) < 1:
+            continue
+        note = etree.SubElement(mods, 
+            "mods:note", 
+            attrib={"type": "admin"})
+        note.text = row
+    if len(form.abstract.data) > 0:
+        abstract = etree.SubElement(mods, "mods:abstract")
+        abstract.text = form.abstract.data
+    if len(form.alt_title.data) > 0:
+        __create_title__(mods, form.alt_title.data, "alternate")
+    for row in form.creators.data:
+        __create_name__(mods, row, "personal", "creator")
+    for row in form.contributors.data:
+        __create_name__(mods, row, "personal", "contributor")
+    for row in form.corporate_contributors.data:
+        __create_name__(mods, row, "corporate", "contributor")
+    for row in form.corporate_creators.data:
+        __create_name__(mods, row, "corporate", "creator")
+    __create_origin_info__(form, mods) 
+    __create_phy_desc__(form, mods)
+    if len(form.title.data) > 0:
+        __create_title__(mods, 
+            form.title.data, 
+            subtitle=form.sub_title.data)
+    reparsed = xml.dom.minidom.parseString(
+        etree.tostring(mods, "unicode"))
+    return reparsed.toprettyxml(encoding='utf-8').decode()
 
 def create_mods(form):
     """Creates a MODS xml document based on form values
@@ -39,7 +138,6 @@ def create_mods(form):
                       'corporate_contributors': [],
                       'creators': [],
                       'corporate_creators': [],
-                      'genre': form.get('genre'),
                       'languages': [],
                       'organizations': [],
                       'schema_type': 'CreativeWork', # Default,
@@ -48,7 +146,7 @@ def create_mods(form):
                       'subject_places': [],
                       'subject_topics': [],
                       'title': form.get('title'),
-                      'typeOfResource': form.get('type_of_resource')
+                      'typeOfResource': []
                       }
     for row in form.getlist('creators'):
         if len(row) > 0:
@@ -78,27 +176,35 @@ def create_mods(form):
     for row in form.getlist('subject_topics'):
         if not row is None and len(row) > 0:
             mods_context['subject_topics'].append(row)
-    if len(form.get('genre')) > 0:
-        mods_context['genre'] = form.get('genre')
-    admin_note = form.get('admin_note')
+    type_res = form.getlist("type_of_resources")
+    for key in form.keys():
+        print("{}={}".format(key, form.get(key)))
+    print("Type of Resources {}".format(type_res))
+    for row in type_res:
+        if len(row) > 0:
+            mods_context['typeOfResource'].append(row)
+    genre = form.get('genre', '')
+    if len(genre) > 0 and not genre.startswith('choose'):
+        mods_context['genre'] = genre
+    admin_note = form.get('admin_note', '')
     if len(admin_note) > 0:
         mods_context['admin_note'] = admin_note
-    description = form.get('description')
+    description = form.get('description', '')
     if len(description) > 0:
         mods_context['description'] = description
     #alt_title = add_obj_template_form.cleaned_data[
     #      'alt_title']
     #if len(alt_title) > 0:
     #    mods_context['alt_title'] = alt_title
-    rights_stmt = form.get('rights_statement')
+    rights_stmt = form.get('rights_statement', '')
     if len(rights_stmt) > 0:
         mods_context['rights_statement'] = rights_stmt
-    mods_context['form'] = form.get('form')
+    mods_context['form'] = form.get('form', '')
     for row in form.getlist("languages"):
         mods_context['languages'].append(row)
     mods_context['publication_place'] = forms.PUBLICATION_PLACE
     mods_context['publisher'] = forms.PUBLISHER
-    if len(form.get('extent')) > 0:
+    if len(form.get('extent', '')) > 0:
         mods_context['extent'] = form.get('extent')
     mods_context['subject_topics'] = list(set(mods_context['subject_topics']))
     mods_context['subject_places'] = list(set(
@@ -326,6 +432,9 @@ def load_edit_form(config, pid):
                 contributors.append(name_part.text)
     date_created=mods_xml.find("mods:originInfo/mods:dateCreated",
         DEFAULT_NS)
+    if date_created is None:
+        date_created = SimpleNamespace()
+        date_created.text = ""
     type_of_resources = []
     for row in mods_xml.findall("mods:typeOfResource", DEFAULT_NS):
         type_of_resources.append(row.text)
@@ -333,14 +442,25 @@ def load_edit_form(config, pid):
     admin_notes = []
     for row in mods_xml.findall("mods:note[@type='admin']", DEFAULT_NS):
         admin_notes.append(row.text)
-    edit_form = forms.EditFedoraObjectFromTemplate(csrf_enabled=False,
+    publisher = mods_xml.find("mods:originInfo/mods:publisher", DEFAULT_NS)
+    publication_place = mods_xml.find(
+        "mods:originInfo/mods:place/mods:placeTerm",
+        DEFAULT_NS)
+    sub_title = mods_xml.find("mods:titleInfo/mods:subTitle", DEFAULT_NS)
+    if sub_title is None:
+        sub_title = SimpleNamespace()
+        sub_title.text = ""
+    edit_form = forms.EditFedoraObjectFromTemplate(
         title=mods_xml.find("mods:titleInfo/mods:title", DEFAULT_NS).text,
+        sub_title=sub_title.text,
         admin_notes=admin_notes,
         date_created=date_created.text,
         abstract=abstract.text,
         pid=pid,
         creators=creators,
         contributors=contributors,
+        publisher=publisher.text,
+        publication_place=publication_place.text,
         type_of_resources=type_of_resources) 
     return edit_form
 

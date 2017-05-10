@@ -191,6 +191,9 @@ class FedoraObjectFromTemplate(Form):
                                 validators=[validators.optional(), 
                                             validators.length(max=255)],
                                 default=INSTITUTION_NAME)
+    publisher = StringField("Publisher", validators=[validators.optional()])
+    publication_place = StringField("Publication Place", 
+        validators=[validators.optional()])
     rights_statement = TextAreaField('Rights Statement',
                                       default=RIGHTS_STATEMENT)
     subject_dates = StringField('Subject -- Dates')
@@ -198,6 +201,7 @@ class FedoraObjectFromTemplate(Form):
     subject_places = StringField('Subject -- Places',
                                  default=PLACE)
     subject_topics = StringField('Subject -- Topic')
+    sub_title = StringField("SubTitle")
     title = StringField('Title',
             validators=[validators.length(max=120), validators.optional()])
     type_of_resources = FieldList(StringField('Type of Resource'), min_entries=1)
@@ -217,6 +221,10 @@ class IndexRepositoryForm(Form):
         'Start Index From', 
         format='%Y-%m-%d',
         validators=(validators.Optional(),))
+
+class LoadMODSForm(Form):
+    pid = StringField("Enter PID to load MODS",
+        validators=[validators.optional(),])
 
 class MODSReplacementForm(Form):
     old_value = StringField("Old Value")

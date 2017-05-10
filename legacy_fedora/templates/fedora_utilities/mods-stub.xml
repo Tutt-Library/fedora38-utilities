@@ -6,6 +6,9 @@
       schema:itemtype="{{ schema_type }}">
 <titleInfo>
  <title>{{ title }}</title>
+ {% if sub_title %}
+ <subTitle>{{ sub_title }}</subTitle>
+ {% endif %}
 </titleInfo>
 {% if alt_title %}
 <titleInfo type="alternative">
@@ -44,7 +47,9 @@
  </role> 
 </name>
 {% endfor %}
-<typeOfResource>{{ typeOfResource }}</typeOfResource>
+{% for row in typeOfResource %}
+<typeOfResource>{{ row }}</typeOfResource>
+{% endfor %}
 <originInfo>
  <dateCreated keyDate="yes">{{ dateCreated }}</dateCreated>
  {% if publisher %}
@@ -70,7 +75,9 @@
  <languageTerm>{{ row }}</languageTerm>
 </language>
 {% endfor %}
+{% if genre %}
 <genre authority="marcgt">{{ genre }}</genre>
+{% endif %}
 <physicalDescription>
  {% if form %}
  <form>{{ form }}</form>
