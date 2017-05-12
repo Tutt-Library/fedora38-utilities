@@ -1,9 +1,11 @@
 __author__ = "Jeremy Nelson"
 import datetime
 from flask_wtf import FlaskForm as Form
-from wtforms import SelectField, StringField, TextAreaField
+from wtforms import BooleanField, FormField, SelectField, StringField 
+from wtforms import TextAreaField
 from wtforms.fields.html5 import DateField
 from wtforms.fields import FieldList
+from wtforms.widgets import TextInput
 from wtforms import validators
 
 DIGITAL_ORIGIN = [('born digital','born digital'),
@@ -155,6 +157,15 @@ PUBLICATION_PLACE = 'Colorado Springs, Colorado'
 SEARCH_INDICES = [('li-testdocker1', 'Test Environment (li-testdocker1)'),
                   ('li-docker1', 'Production Environment (li-docker1)')]
 
+class DateMODSForm(Form):
+    key_date = BooleanField("Key Date?")
+
+class DateCreatedForm(DateMODSForm):
+    date = StringField('Date Created')
+
+class DateIssuedForm(DateMODSForm):
+    date = StringField('Date Issued')
+
 class FedoraObjectFromTemplate(Form):
     abstract = TextAreaField("Abstract",
         validators=[validators.length(max=1500)])
@@ -171,9 +182,13 @@ class FedoraObjectFromTemplate(Form):
     corporate_contributors = FieldList(StringField("Corporate Contributors"), min_entries=1)
     corporate_creators = FieldList(StringField("Corporate Creators"), min_entries=1)
     creators = FieldList(StringField("Creators"), min_entries=1)
-    date_created = StringField('Date Created')
+    date_created = FormField(DateCreatedForm, _prefix="created")
+    date_issued = FormField(DateIssuedForm, _prefix="issued")
     digital_origin = SelectField('Digital Origin',
         choices=DIGITAL_ORIGIN)
+    degree_name = StringField('Degree Name')
+    degree_type = StringField('Degree Type')
+    degree_grantor = StringField('Degree Grantor')
     description = TextAreaField('Description',
                                 validators=[validators.optional(), 
                                             validators.length(max=1500)])
@@ -196,14 +211,18 @@ class FedoraObjectFromTemplate(Form):
         validators=[validators.optional()])
     rights_statement = TextAreaField('Rights Statement',
                                       default=RIGHTS_STATEMENT)
-    subject_dates = StringField('Subject -- Dates')
-    subject_people = StringField('Subject -- People')
-    subject_places = StringField('Subject -- Places',
-                                 default=PLACE)
-    subject_topics = StringField('Subject -- Topic')
+    sponsor = StringField("Department Sponsor")
+    subject_dates = FieldList(StringField('Subject -- Dates'), min_entries=1)
+    subject_people = FieldList(StringField('Subject -- People'), min_entries=1)
+    subject_places = FieldList(
+       StringField('Subject -- Places'), min_entries=1)
+    subject_topics = FieldList(StringField('Subject -- Topic'), min_entries=1)
     sub_title = StringField("SubTitle")
     title = StringField('Title',
             validators=[validators.length(max=120), validators.optional()])
+    thesis_advisors = FieldList(StringField("Thesis Advisors"), min_entries=1)
+    thesis_notes = FieldList(StringField("Thesis Note", 
+        validators=[validators.length(max=255)]))
     type_of_resources = FieldList(StringField('Type of Resource'), min_entries=1)
 
 class AddFedoraObjectFromTemplate(FedoraObjectFromTemplate):

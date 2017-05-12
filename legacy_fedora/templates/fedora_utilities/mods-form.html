@@ -98,8 +98,18 @@
       <div class="row">
           <section class="col-md-6">
               <div class="form-group">
-                  {{ ingest_form.date_created.label }}
-                  {{ ingest_form.date_created(class_='form-control') }}
+                  {{ ingest_form.date_created }}
+                  {# ingest_form.date_created.label }}
+                  {{ ingest_form.date_created.date(class_='form-control') }}
+                  {{ ingest_form.date_created.key_date.label(style='font-weight: bold') }} 
+                  {{ ingest_form.date_created.key_date #}
+              </div>
+              <div class="form-group">
+                  {{ ingest_form.date_issued.label }}
+                  {{ ingest_form.date_issued.date(class_='form-control') }}
+                  {{ ingest_form.date_issued.key_date.label(style='font-weight: bold') }} 
+                  {{ ingest_form.date_issued.key_date }}
+
               </div>
               <div class="form-group">
                   {{ ingest_form.digital_origin.label }}
@@ -118,6 +128,44 @@
                   {{ ingest_form.genre(class_='form-control') }}
               </div>
           </section> 
+      </div>
+      <hr>
+      <h3>Thesis Information</h3>
+      <div class="row">
+            <section class="col-md-6">
+                <div class="form-group">
+                    {{ ingest_form.degree_name.label }}
+                    {{ ingest_form.degree_name(class_='form-control') }}
+                </div>
+              <div class="form-group">
+                {{ ingest_form.thesis_advisors.label }} <a href="#" class="tag tag-primary" 
+                      onclick="NewInput(this, 'thesis_advisors')">+</a>
+                  {% for row in ingest_form.thesis_advisors %}
+                  {{ row(class_='form-control') }}
+                  {% endfor %}
+              </div>
+              <div class="form-group">
+                {{ ingest_form.degree_grantor.label }}
+                {{ ingest_form.degree_grantor(class_='form-control') }}
+              </div>
+            </section>
+            <section class="col-md-6">
+                <div class="form-group">
+                    {{ ingest_form.degree_type.label }}
+                    {{ ingest_form.degree_type(class_='form-control') }}
+                </div>
+                <div class="form-group">
+                  {{ ingest_form.thesis_notes.label }}
+                  {% for row in ingest_form.thesis_notes %}
+                  {{ row(class_="form-control", rows=4) }}
+                  {% endfor %}
+                </div>
+                <div class="form-group">
+                {{ ingest_form.sponsor.label }}
+                {{ ingest_form.sponsor(class_='form-control') }}
+              </div>
+
+            </section>
       </div>
       <div class="row">
           <section class="col-md-6">
@@ -201,24 +249,32 @@
               <div class="form-group">
                   {{ ingest_form.subject_people.label }} <a href="#" class="tag tag-primary" 
                       onclick="NewInput(this, 'subject_people')">+</a>
-                  {{ ingest_form.subject_people(class_='form-control') }}
+                  {% for row in ingest_form.subject_people %}
+                    {{ row(class_='form-control') }}
+                 {% endfor %}
               </div>
               <div class="form-group">
                   {{ ingest_form.subject_places.label }} <a href="#" class="tag tag-primary" 
                       onclick="NewInput(this, 'subject_places')">+</a>
-                  {{ ingest_form.subject_places(class_='form-control') }}
+                  {% for row in ingest_form.subject_places %}
+                    {{ row(class_='form-control') }}
+                  {% endfor %}
               </div>
           </section>
           <section class="col-md-6">
               <div class="form-group">
                   {{ ingest_form.subject_topics.label }} <a href="#" class="tag tag-primary" 
                       onclick="NewInput(this, 'subject_topics')">+</a>
-                  {{ ingest_form.subject_topics(class_='form-control') }}
+                  {% for row in ingest_form.subject_topics %}
+                  {{ row(class_='form-control') }}
+                  {% endfor %}
               </div>
               <div class="form-group">
                   {{ ingest_form.subject_dates.label }} <a href="#" class="tag tag-primary" 
                       onclick="NewInput(this, 'subject_dates')">+</a>
-                  {{ ingest_form.subject_dates(class_='form-control') }}
+                  {% for row in ingest_form.subject_dates %}
+                    {{ row(class_='form-control') }}
+                  {% endfor %}
               </div>
           </section>
       </div>

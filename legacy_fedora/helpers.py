@@ -56,7 +56,7 @@ def __create_origin_info__(form, mods):
     if len(form.publication_place.data) > 0:
         place = etree.SubElement(origin_info,
             "mods:place")
-        place_term = etee.SubElement(place,
+        place_term = etree.SubElement(place,
             "mods:placeTerm")
         place_term.text = form.publication_place.data
     if len(form.frequency.data) > 0:
@@ -421,7 +421,7 @@ def load_edit_form(config, pid):
     mods_result = requests.get(mods_url,
         auth=config.get("FEDORA_AUTH"))
     mods_xml = etree.XML(mods_result.text)
-    creators, contributors = [], []
+    creators, contributors, thesis_advisors = [], [], []
     for name in mods_xml.findall("mods:name[@type='personal']", DEFAULT_NS):
         role = name.find("mods:role/mods:roleTerm", DEFAULT_NS)
         name_part = name.find("mods:namePart", DEFAULT_NS)
@@ -430,11 +430,38 @@ def load_edit_form(config, pid):
                 creators.append(name_part.text)
             if role.text.startswith("contributor"):
                 contributors.append(name_part.text)
-    date_created=mods_xml.find("mods:originInfo/mods:dateCreated",
+            if role.text.startswith("thesis advisor"):
+                thesis_advisors.append(name_part.text)
+    corporate_creators, corporate_contributors = [], []
+    sponsor, degree_grantor = None, None
+    for name in mods_xml.findall("mods:name[@type='corporate']", DEFAULT_NS):
+        role = name.find("mods:role/mods:roleTerm", DEFAULT_NS)
+        name_part = name.find("mods:namePart", DEFAULT_NS)
+        if name_part.text is not None and len(name_part.text) > 0:
+            if role.text.startswith("creator"):
+                corporate_creators.append(name_part.text)
+            if role.text.startswith("contributor"):
+                corporate_contributors.append(name_part.text)
+            if role.text.startswith("degree grantor"):
+                degree_grantor = name_part.text
+            if role.text.startswith("sponsor"):
+                sponsor = name_part.text
+    date_created_val = mods_xml.find("mods:originInfo/mods:dateCreated",
         DEFAULT_NS)
-    if date_created is None:
-        date_created = SimpleNamespace()
-        date_created.text = ""
+    if date_created_val is None:
+        date_created = forms.DateCreatedForm()
+    else:
+        date_created = forms.DateCreatedForm()
+        date_created.process(date=date_created_val.text,
+            key_date=date_created_val.attrib.get("keyDate", "no"))
+            
+    date_issued=mods_xml.find("mods:originInfo/mods:dateIssued",
+        DEFAULT_NS)
+    if date_issued is None:
+        date_issued = forms.DateIssuedForm()
+    else:
+        date_issued = forms.DateIssuedForm(date=date_issued.text,
+            key_date=date_issued.attrib.get("keyDate", "no"))
     type_of_resources = []
     for row in mods_xml.findall("mods:typeOfResource", DEFAULT_NS):
         type_of_resources.append(row.text)
@@ -442,6 +469,16 @@ def load_edit_form(config, pid):
     admin_notes = []
     for row in mods_xml.findall("mods:note[@type='admin']", DEFAULT_NS):
         admin_notes.append(row.text)
+    degree_name, degree_type, thesis_notes = None, None, []
+    for row in mods_xml.findall("mods:note[@type='thesis']", DEFAULT_NS):
+        display_label = row.get("displayLabel")
+        if display_label is None:
+            thesis_notes.append(row.text)
+        elif "degree name" in display_label.lower():
+            degree_name = row.text
+        elif "degree type" in display_label.lower():
+            degree_type = row.text
+    extent = mods_xml.find("mods:physicalDescription/mods:extent", DEFAULT_NS)
     publisher = mods_xml.find("mods:originInfo/mods:publisher", DEFAULT_NS)
     publication_place = mods_xml.find(
         "mods:originInfo/mods:place/mods:placeTerm",
@@ -450,17 +487,27 @@ def load_edit_form(config, pid):
     if sub_title is None:
         sub_title = SimpleNamespace()
         sub_title.text = ""
+    subject_topics = []
+    for row in mods_xml.findall("mods:subject/mods:topic", DEFAULT_NS):
+        subject_topics.append(row.text)
     edit_form = forms.EditFedoraObjectFromTemplate(
         title=mods_xml.find("mods:titleInfo/mods:title", DEFAULT_NS).text,
         sub_title=sub_title.text,
         admin_notes=admin_notes,
-        date_created=date_created.text,
         abstract=abstract.text,
         pid=pid,
         creators=creators,
         contributors=contributors,
+        degree_grantor=degree_grantor,
+        degree_name=degree_name,
+        degree_type=degree_type,
+        extent=extent.text,
         publisher=publisher.text,
         publication_place=publication_place.text,
+        sponsor=sponsor,
+        subject_topics=subject_topics,
+        thesis_advisors=thesis_advisors,
+        thesis_notes=thesis_notes,
         type_of_resources=type_of_resources) 
     return edit_form
 
