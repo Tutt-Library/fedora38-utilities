@@ -1,14 +1,19 @@
 {% extends 'fedora_utilities/app.html' %}
 {% from "fedora_utilities/mods-form.html" import mods_form with context %}
 
+{% block more_css %}
+<link type="text/css" rel='stylesheet' href="{{ url_for('static', filename='css/xonomy.css') }}"></link>
+{% endblock %}
+
+{% block body_attrib %}{% if pid %}onload="loadPid()"{% endif %}{% endblock %}
 {% block fedora_form %}
    <div class="jumbotron">
        <a name="ingest"></a>
-       <h2>Edit MODS</h2>
+       <h2>Edit MODS{% if pid %} for {{ pid }}{% endif %}</h2>
         <div class="alert alert-warning hidden-xs-up" id="batch-status">
             <h4 class="alert-heading">Running Edit Job &hellip;</h4>
         </div>
-        {% if load_form %}
+        {% if not mods_xml %}
             <form action="{{ url_for('edit_mods') }}" method="POST">
             {{ load_form.csrf_token }}
             <div class="row">
@@ -20,20 +25,48 @@
                 </section>
             </div>
             </form>
-        {% else %}
-        {{ mods_form(url_for('edit_mods', pid=pid), 'Update MODS') }}
         {% endif %}
+    {% if mods_xml %}
+    <div class="btn-group" role="group" aria-label="MODS Editor Options">
+        <button type="button" class="btn btn-info" onclick="Xonomy.setMode('laic')">IAIC Mode</button>
+        <button type="button" class="btn btn-info" onclick="Xonomy.setMode('nerd')">Nerd Mode</button>
+        <button type="button" class="btn btn-warning" onclick="loadPid()">Reload</button>
+        <button type="button" class="btn btn-info" onclick="saveMODS()">Save</button>
+    </div> 
+    {% endif %}
    </div>
+
+    {% if mods_xml %}
+    <div style="border: 1px solid black; padding: 1em">
+            <div id="mods-editor"></div>
+    </div>
+    {% endif %}
 {% endblock %}
 
 {% block more_js %}
+<script type="text/javascript" src="{{ url_for('static', filename='js/xonomy.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/mods-spec.js') }}"></script>
 <script>
+    {% if mods_xml %}
+    function loadPid() {
+        var xml = `{{ mods_xml|safe }}`;
+        var editor = document.getElementById("mods-editor");
+        Xonomy.render(xml, editor, modsSpec);
+    }
+
+    function saveMODS() {
+        console.log(Xonomy.harvest());
+
+
+    }
+    {% endif %}
+    {#
     function NewInput(btn, field_id) {
         var last_field = $(btn).prev();
         last_field.after("<br><input name='" + field_id + "' type='text', class='form-control'></input>");
     }
 
-    {#$("#batch-form").submit(function() {
+    $("#batch-form").submit(function() {
         var url = $(this).attr('action');
         $("#batch-form").addClass("hidden-xs-up");
         $("#batch-status").removeClass("hidden-xs-up");

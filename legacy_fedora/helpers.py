@@ -420,6 +420,15 @@ def load_edit_form(config, pid):
         pid)
     mods_result = requests.get(mods_url,
         auth=config.get("FEDORA_AUTH"))
+    mods_result.encoding = 'utf-8'
+    return mods_result.text
+
+def old_load_edit_form(config, pid):
+    mods_url = "{}{}/datastreams/MODS/content".format(
+        config.get("REST_URL"),
+        pid)
+    mods_result = requests.get(mods_url,
+        auth=config.get("FEDORA_AUTH"))
     mods_xml = etree.XML(mods_result.text)
     creators, contributors, thesis_advisors = [], [], []
     for name in mods_xml.findall("mods:name[@type='personal']", DEFAULT_NS):

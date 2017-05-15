@@ -84,20 +84,20 @@ def add_stub():
 @app.route("/edit/", methods=["GET", "POST"])
 @app.route("/edit/<path:pid>", methods=["GET", "POST"])
 def edit_mods(pid=None):
-    load_form, edit_form = None, None
+    load_form, mods_xml = None, None
     if pid is None:
         load_form = LoadMODSForm()
         if load_form.validate_on_submit():
             return redirect(url_for("edit_mods", pid=load_form.pid.data))
     else:
-        edit_form = load_edit_form(app.config, pid)
+        mods_xml = load_edit_form(app.config, pid)
         if request.method.startswith("POST"):
             mods_xml = build_mods(edit_form)
             return mods_xml
     return render_template('fedora_utilities/mods-edit.html',
         load_form=load_form,
         pid=pid,
-        ingest_form=edit_form)
+        mods_xml=mods_xml)
 
 @app.route("/index/status")
 def indexing_status():
