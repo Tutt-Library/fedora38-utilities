@@ -33,6 +33,34 @@ var modsSpec = {
                 }
             }
         },
+        "extent": {
+            hasText: true,
+            menu: [{
+                caption: "Delete <extent>",
+                action: Xonomy.deleteElement
+            }]
+        },
+        "form": {
+            hasText: true,
+            menu: [{
+                caption: "Delete <form>",
+                action: Xonomy.deleteElement
+            }],
+            attributes: {
+                "authority": {
+                    asker: Xonomy.askPicklist,
+                    askerParameter: [{
+                        name: "MARC form of item term list",
+                        value: "marcform"
+                    }],
+                    menu: [{
+                        caption: "Delete @authority",
+                        action: Xonomy.deleteAttribute
+                    }]
+                }
+
+            }
+        },
         "language": {
             menu: [{
                 caption: "Add <languageTerm>",
@@ -78,14 +106,17 @@ var modsSpec = {
                 },{
                     caption: "Add <name>",
                     action: Xonomy.newElementChild,
-                    actionParameter: "<name><namePart/><role><roleTerm type=\"text\" authorit=\"marcrelator\" /></role></name>"
+                    actionParameter: "<name><namePart/><role><roleTerm type=\"text\" authority=\"marcrelator\" /></role></name>"
                 },
                 {
                     caption: "Add <note>",
                     action: Xonomy.newElementChild,
                     actionParameter: "<note></note>"
-                },
-                {
+                },{
+                    caption: "Add <physicalDescription>",
+                    action: Xonomy.newElementChild,
+                    actionParameter: "<physicalDescription/>"
+                },{
                     caption: "Add <subject>",
                     action: Xonomy.newElementChild,
                     actionParameter: "<subject />"
@@ -129,12 +160,93 @@ var modsSpec = {
                 }
             }
         },
+        "dateCreated": {
+            menu: [{
+                caption: "Add @keydate",
+                action: Xonomy.newAttribute,
+                actionParameter: { name: "keyDate", value: "no"}
+            },{
+                caption: "Delete <dateCreated>",
+                action: Xonomy.deleteElement
+            }],
+            hasText: true,
+            attributes: {
+                "keyDate": {
+                    asker: Xonomy.askPicklist,
+                    askerParameter: [
+                        "yes",
+                        "no"
+                    ]
+                }
+            }
+        },
+        "dateIssued": {
+            menu: [{
+                caption: "Add @keydate",
+                action: Xonomy.newAttribute,
+                actionParameter: { name: "keyDate", value: "no"}
+            },{
+                caption: "Delete <dateIssued>",
+                action: Xonomy.deleteElement
+            }],
+            hasText: true,
+            attributes: {
+                "keyDate": {
+                    asker: Xonomy.askPicklist,
+                    askerParameter: [
+                        "yes",
+                        "no"
+                    ],
+                   menu: [{
+                        caption: "Delete @keyDate",
+                        action: Xonomy.deleteAttribute
+                    }
+                    ]
+               
+                }
+            }
+        },
+
         "genre": {
             hasText: true,
             menu: [{
                 caption: "Delete <genre>",
                 action: Xonomy.deleteElement
             }],
+        },
+        "identifier": {
+            hasText: true,
+            menu: [{
+                caption: "Add @displayLabel",
+                action: Xonomy.newAttribute,
+                actionParameter: { name: "displayLabel", value: ""}
+            },{
+                caption: "Add @type",
+                action: Xonomy.newAttribute,
+                actionParameter: { name: "type", value: ""}
+            },{
+                caption: "Delete <identifier>",
+                action: Xonomy.deleteElement
+            }],
+            attributes: {
+                 "displayLabel": {
+                    asker: Xonomy.askString,
+                    menu: [{
+                        caption: "Delete @displayLabel",
+                        action: Xonomy.deleteAttribute
+                    }]
+                },
+                "type": {
+                    asker: Xonomy.askPicklist,
+                    askerParameter: [
+                        "hdl",
+                        "lccn",
+                        "local",
+                        "isbn",
+                        "uri"
+                    ],
+                }
+            }
         },
         "name": {
             menu: [{
@@ -253,6 +365,28 @@ var modsSpec = {
             },
             hasText: true
         },
+        "originInfo": {
+            menu: [{
+                caption: "Add <dateCreated>",
+                action: Xonomy.newElementChild,
+                actionParameter: "<dateCreated/>"
+            },{
+                caption: "Add <dateIssued>",
+                action: Xonomy.newElementChild,
+                actionParameter: "<dateIssued />"
+            },{
+                caption: "Add <publisher>",
+                action: Xonomy.newElementChild,
+                actionParameter: "<publisher />"
+            },{
+                caption: "Add <place>",
+                action: Xonomy.newElementChild,
+                actionParameter: "<place><placeTerm /></place>"
+            },{
+                caption: "Delete <originInfo>",
+                action: Xonomy.deleteElement
+            }]
+        },
         "place": {
             menu: [{
                 caption: "Add <placeTerm>",
@@ -266,10 +400,56 @@ var modsSpec = {
         },
         "placeTerm": {
             menu: [{
+                caption: "Add @authority property",
+                action: Xonomy.newAttribute,
+                actionParameter: {name: "authority", value: ""}
+            },{
+                caption: "Add @type property",
+                action: Xonomy.newAttribute,
+                actionParameter: {name: "type", value: ""}
+            },{
                 caption: "Delete <placeTerm>",
                 action: Xonomy.deleteElement
             }],
-            hasText: true
+            hasText: true,
+            attributes: {
+                "authority": {
+                   asker: Xonomy.askString,
+                   menu: [{
+                        caption: "Delete @authority",
+                        action: Xonomy.deleteAttribute
+                    }]
+                 },
+                "type": {
+                    asker: Xonomy.askPicklist,
+                    askerParameter: [
+                        "code",
+                        "text"
+                    ],
+                    menu: [{
+                        caption: "Delete @type",
+                        action: Xonomy.deleteAttribute
+                    }]
+                }
+            }
+        },
+        "physicalDescription": {
+            menu: [{
+                caption: "Add <digitalOrigin>",
+                action: Xonomy.newElementChild,
+                actionParameter: "<digitalOrigin />"
+            },{
+                caption: "Add <extent>",
+                action: Xonomy.newElementChild,
+                actionParameter: "<extent />"
+            },{
+                caption: "Add <form>",
+                action: Xonomy.newElementChild,
+                actionParameter: "<form authority=\"marcform\"/>"
+            },{
+                caption: "Delete <physicalDescription>",
+                action: Xonomy.deleteElement
+            }]
         },
         "publisher": {
             menu: [{

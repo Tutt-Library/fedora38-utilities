@@ -125,6 +125,8 @@ class Indexer(object):
                 break
             if mime_type.startswith("application/pdf") or\
                mime_type.startswith("audio/mpeg") or\
+               mime_type.startswith("audio/mp3") or\
+               mime_type.startswith("audio/x-m4a") or\
                mime_type.startswith("video/quicktime") or\
                mime_type.startswith("video/mp4") or\
                mime_type.startswith("image/jpeg") or\

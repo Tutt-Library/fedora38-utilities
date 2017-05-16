@@ -15,6 +15,7 @@ from .forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
 from .forms import MODSReplacementForm, MODSSearchForm
 from .forms import EditFedoraObjectFromTemplate, LoadMODSForm 
 from .helpers import create_mods, generate_stubs, load_edit_form, build_mods
+from .helpers import save_mods_xml
 from .indexer import Indexer
 from .repairer import update_multiple
 
@@ -98,6 +99,14 @@ def edit_mods(pid=None):
         load_form=load_form,
         pid=pid,
         mods_xml=mods_xml)
+
+@app.route("/edit/<pid>/save", methods=["POST"])
+def save_mods(pid):
+    mods_xml = request.form.get("xml")
+    mods_xml = mods_xml.replace('xml:space="preserve"', "")
+    save_mods_xml(app.config, pid, mods_xml)
+    return jsonify({"message": "MODS XML saved",
+                    "pid": pid})
 
 @app.route("/index/status")
 def indexing_status():

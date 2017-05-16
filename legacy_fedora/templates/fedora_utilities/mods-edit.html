@@ -28,8 +28,6 @@
         {% endif %}
     {% if mods_xml %}
     <div class="btn-group" role="group" aria-label="MODS Editor Options">
-        <button type="button" class="btn btn-info" onclick="Xonomy.setMode('laic')">IAIC Mode</button>
-        <button type="button" class="btn btn-info" onclick="Xonomy.setMode('nerd')">Nerd Mode</button>
         <button type="button" class="btn btn-warning" onclick="loadPid()">Reload</button>
         <button type="button" class="btn btn-info" onclick="saveMODS()">Save</button>
     </div> 
@@ -55,9 +53,12 @@
     }
 
     function saveMODS() {
-        console.log(Xonomy.harvest());
-
-
+        var mods_xml = Xonomy.harvest();
+        $.post("{{ url_for('save_mods', pid=pid) }}",
+            data={"xml": mods_xml},
+            success=function(data) {
+            alert(data['message']);
+        });
     }
     {% endif %}
     {#

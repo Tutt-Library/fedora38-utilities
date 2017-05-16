@@ -421,7 +421,8 @@ def load_edit_form(config, pid):
     mods_result = requests.get(mods_url,
         auth=config.get("FEDORA_AUTH"))
     mods_result.encoding = 'utf-8'
-    return mods_result.text
+    mods_xml = etree.XML(mods_result.text)
+    return etree.tostring(mods_xml).decode()
 
 def old_load_edit_form(config, pid):
     mods_url = "{}{}/datastreams/MODS/content".format(
@@ -520,6 +521,16 @@ def old_load_edit_form(config, pid):
         type_of_resources=type_of_resources) 
     return edit_form
 
+def save_mods_xml(config, pid, mods_xml):
+    mods_url = "{}{}/datastreams/MODS?versionable=true".format(
+        config.get("REST_URL"),
+        pid)
+    result = requests.put(mods_url,
+        data=mods_xml,
+        auth=config.get("FEDORA_AUTH"))
+    if result.status_code > 399:
+        raise ValueError("Failed to save MODS XML for {}".format(pid))
+    return True
 
 # SPARQL Queries
 NEWEST_SPARQL = """SELECT DISTINCT ?s ?date
