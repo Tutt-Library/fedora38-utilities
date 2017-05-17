@@ -33,12 +33,17 @@
     </div> 
     {% endif %}
    </div>
+{% endblock %}
 
-    {% if mods_xml %}
-    <div style="border: 1px solid black; padding: 1em">
+{% block second_row %}
+{% if mods_xml %}
+<div class="row container"> 
+    <div style="border: 1px solid black; padding: 1em"
+          class="col-10 jumbotron">
             <div id="mods-editor"></div>
     </div>
-    {% endif %}
+</div>
+{% endif %}
 {% endblock %}
 
 {% block more_js %}
