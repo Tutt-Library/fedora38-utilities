@@ -81,12 +81,12 @@ var modsSpec = {
         },
         "mods:mods": {
             menu: [{
-                    caption: "Append <abstract>",
+                    caption: "Add <abstract>",
                     action: Xonomy.newElementChild,
                     actionParameter: "<mods:abstract xmlns:mods='http://www.loc.gov/mods/v3'/>"
                 },
                 {
-                    caption: "Append <accessCondition>",
+                    caption: "Add <accessCondition>",
                     action: Xonomy.newElementChild,
                     actionParameter: "<mods:accessCondition xmlns:mods='http://www.loc.gov/mods/v3'/>"
                 },
@@ -120,8 +120,11 @@ var modsSpec = {
                     caption: "Add <subject>",
                     action: Xonomy.newElementChild,
                     actionParameter: "<mods:subject xmlns:mods='http://www.loc.gov/mods/v3' />"
-                },
-                {
+                },{
+                    caption: "Add <tableOfContents>",
+                    action: Xonomy.newElementChild,
+                    actionParameter: "<mods:tableOfContents xmlns:mods='http://www.loc.gov/mods/v3' />"
+                },{
                     caption: "Add <titleInfo>",
                     action: Xonomy.newElementChild,
                     actionParameter: "<mods:titleInfo xmlns:mods='http://www.loc.gov/mods/v3'><mods:title/></mods:titleInfo>"
@@ -538,6 +541,21 @@ var modsSpec = {
             menu: [{
                 caption: "Delete <subTitle>",
                 action: Xonomy.deleteElement
+            }],
+            hasText: true
+        },
+        "mods:tableOfContents": {
+            hasText: true,
+            menu: [{
+                caption: "Delete <tableOfContents>",
+                action: Xonomy.deleteElement
+            }]
+        },
+        "mods:temporal": {
+            menu: [{
+                caption: "Delete <temporal>",
+                action: Xonomy.deleteElement
+
             }],
             hasText: true
         },
