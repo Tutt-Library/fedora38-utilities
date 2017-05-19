@@ -9,7 +9,7 @@ import threading
 
 from elasticsearch import Elasticsearch
 from flask import Flask, render_template, request, redirect, Response
-from flask import jsonify, flash, url_for
+from flask import jsonify, flash, url_for, abort
 from flask_socketio import SocketIO
 from .forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
 from .forms import MODSReplacementForm, MODSSearchForm
@@ -92,6 +92,8 @@ def edit_mods(pid=None):
             return redirect(url_for("edit_mods", pid=load_form.pid.data))
     else:
         mods_xml = load_edit_form(app.config, pid)
+        if mods_xml is None:
+            return abort(404)
         if request.method.startswith("POST"):
             mods_xml = build_mods(edit_form)
             return mods_xml

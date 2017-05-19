@@ -420,6 +420,8 @@ def load_edit_form(config, pid):
         pid)
     mods_result = requests.get(mods_url,
         auth=config.get("FEDORA_AUTH"))
+    if mods_result.status_code == 404:
+        return
     mods_result.encoding = 'utf-8'
     mods_xml = etree.XML(mods_result.text)
     return etree.tostring(mods_xml).decode()
