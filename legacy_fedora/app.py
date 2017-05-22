@@ -70,6 +70,7 @@ def about():
 @app.route("/add_stub", methods=["GET", "POST"])
 def add_stub():
     ingest_form = AddFedoraObjectFromTemplate(csrf_enabled=False)
+    print("Ingest form validation {}".format(ingest_form.validate_on_submit()))
     if ingest_form.validate_on_submit():
         mods_xml = create_mods(request.form)
         return jsonify(generate_stubs(
