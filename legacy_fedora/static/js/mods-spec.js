@@ -61,6 +61,13 @@ var modsSpec = {
 
             }
         },
+        "mods:geographic": {
+             menu: [{
+                caption: "Delete <geographic>",
+                action: Xonomy.deleteElement
+            }],
+           hasText: true,
+        },
         "mods:language": {
             menu: [{
                 caption: "Add <languageTerm>",
