@@ -7,22 +7,24 @@ import json
 import time
 import threading
 
+from concurrent.futures import ThreadPoolExecutor
 from elasticsearch import Elasticsearch
 from flask import Flask, render_template, request, redirect, Response
 from flask import jsonify, flash, url_for, abort
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, emit
 from .forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
 from .forms import MODSReplacementForm, MODSSearchForm
 from .forms import EditFedoraObjectFromTemplate, LoadMODSForm 
 from .helpers import create_mods, generate_stubs, load_edit_form, build_mods
 from .helpers import save_mods_xml
 from .indexer import Indexer
-from .repairer import update_multiple
+from .repairer import update_multiple, update_mods
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('config.py')
 socketio = SocketIO(app)
 
+executor = ThreadPoolExecutor(2)
 
 ACTIVE_MSGS = []
 BACKEND_THREAD = None
@@ -70,7 +72,6 @@ def about():
 @app.route("/add_stub", methods=["GET", "POST"])
 def add_stub():
     ingest_form = AddFedoraObjectFromTemplate(csrf_enabled=False)
-    print("Ingest form validation {}".format(ingest_form.validate_on_submit()))
     if ingest_form.validate_on_submit():
         mods_xml = create_mods(request.form)
         return jsonify(generate_stubs(
@@ -125,15 +126,24 @@ def indexing_status():
     return jsonify({"message": msg})
     #socketio.emit('status event', {"message": msg})
 
-@app.route("/index/pid", methods=["POST"])
-def index_pid():
-    pid = request.form.get("pid")
-    search_index = request.form.get("indices")
+@socketio.on('index status')
+def handle_index_status(data):
+    print(data)
+    emit('indexer status', 1)
+
+def __index_pid__(search_idx, pid):
     indexer = Indexer(app=app, 
         elasticsearch=search_index)
     ancestors = indexer.__get_ancestry__(pid)
     ancestors.reverse()
     indexer.index_pid(pid, ancestors[-1], ancestors)
+
+
+@app.route("/index/pid", methods=["POST"])
+def index_pid():
+    pid = request.form.get("pid")
+    search_index = request.form.get("indices")
+    __index_pid__(search_index, pid)
     flash("Indexed PID {} in index {}".format(pid, search_index))
     return redirect(url_for('index_repository'))
 
@@ -161,15 +171,31 @@ def index_repository():
 
 @app.route("/mods-replacement", methods=["POST", "GET"])
 def mods_replacement():
-    global BACKEND_THREAD
     replace_form = MODSReplacementForm(csrf_enabled=False)
     search_form = MODSSearchForm(csrf_enabled=False)
     if replace_form.validate_on_submit():
+        collection_pid = replace_form.collection_pid.data
         pid_listing = replace_form.pid_listing.data.split(",")
         xpath = replace_form.select_xpath.data
         old_value = replace_form.old_value.data
         new_value = replace_form.new_value.data
-        return jsonify({"total": len(pid_listing)})
+        if collection_pid is not None and len(collection_pid) > 0:
+            pid_listing = get_collection_pids(app.config, collection_pid)
+        for pid in pid_listing:
+            future = executor.submit(update_mods,
+                app=app,
+                pid=pid,
+                xpath=xpath,
+                old=old_value,
+                new=new_value)
+            flash("Replaces {} old {} with {} for pid {}".format(
+                xpath,
+                old_value,
+                new_value,
+                pid))
+            
+        #return jsonify({"total": len(pid_listing)})
+        return redirect(url_for('mods_replacement'))
     return render_template('fedora_utilities/mods-replacement.html',
         replace_form=replace_form,
         search_form=search_form)

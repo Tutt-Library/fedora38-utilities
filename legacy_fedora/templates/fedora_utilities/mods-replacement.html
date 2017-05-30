@@ -4,37 +4,67 @@
 
 {% block fedora_form %}
 <div class="jumbotron">
-    <div class="alert alert-success alert-dismissible fade hidden" role="alert" id="success-alert">
+    {#<div class="alert alert-success alert-dismissible fade hidden" role="alert" id="success-alert">
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
             <span aria-hidden="true">&times;</span>
         </button>
         <strong>Success!</strong> <span id="total-changed"></span> pids updated 
         <em id="info-old-val"></em> with <em id="info-new-val"></em>
-    </div>
-    
+    </div>#}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-warning">
+            <strong>Message!</strong>
+            {% for msg in messages %}
+                <p>{{ msg|safe }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %} 
     <form method="POST" action="{{ url_for('mods_replacement') }}" onsubmit="event.preventDefault(); return RunReplacementJob()"
      id="replace-form">
-    <p>Form allows for batch updating of MODS metadata</p>
-        <div class="row">
+        <p class="lead">Batch updating of MODS metadata</p>
+        <ol>
+        <li class="row">
+            <h4>Select PIDS</h4>
+            <section class="col-md-6">
+                {{ replace_form.collection_pid.label }}
+                {{ replace_form.collection_pid(class_='form-control') }}
+            </section>
+            <section class="col-md-1">
+                <strong>OR</strong>
+            </section>
             <section class="col-md-3">
                 <button type="button" class="btn btn-success" data-toggle="modal"
                  data-target="#search-pids-dlg">Search for PIDS</button>
-
             </section>
-             <section class="col-md-9">
+        </li>
+        <li class="row">
+            <h4>Search Index and PID Listing</h4>
+            <section class="col-md-6">
+                {{ replace_form.indices.label }}
+                {{ replace_form.indices(class_='form-control') }}
+            </section>
+             <section class="col-md-6">
                 {{ replace_form.pid_listing.label }}
                 {{ replace_form.pid_listing(class_='form-control') }}
               </section>
-        </div>
-        <div class="row">
+        </li>
+        <li class="row">
+            <h4>XPath (use <em>mods</em> prefix)</h4>
             <section class="col-md-8">
                 <div class="form-group">
                   {{ replace_form.select_xpath.label }}
                   {{ replace_form.select_xpath(class_="form-control") }} 
                 </div>
             </section>
-        </div>
-        <div class="row">
+            <section class="col-md-4">
+                <h5>Examples</h5>
+                <code>mods:typeOfResource</code>
+            </section>
+        </li>
+        <li class="row">
+            <h4>Values to match and replace</h4>
             <section class="col-md-6">
                 <div class="form-group">
                     {{ replace_form.old_value.label }}
@@ -47,7 +77,7 @@
                     {{ replace_form.new_value(class_="form-control") }}
                 </div>
             </section>
-        </div>
+        </li>
         <div class="form-group">
             <button class="btn btn-warning" type="reset">Reset form</button>
             <button class="btn btn-primary" type="submit" >Replace values</button>

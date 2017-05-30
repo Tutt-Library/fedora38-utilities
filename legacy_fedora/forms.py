@@ -226,6 +226,10 @@ class LoadMODSForm(Form):
 class MODSReplacementForm(Form):
     old_value = StringField("Old Value")
     new_value = StringField("New Value")
+    collection_pid = StringField("Collection PID",
+        validators=[validators.optional(),])
+    indices = SelectField('Search Index',
+        choices=SEARCH_INDICES)
     pid_listing = TextAreaField('PID Listing',
             validators=[validators.optional(),])
     select_xpath = StringField("Selection XPath")

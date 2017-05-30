@@ -47,7 +47,7 @@ def update_mods(**kwargs):
     start = datetime.datetime.utcnow()
     rest_url = kwargs.get("rest_url", app.config.get("REST_URL"))
     auth = kwargs.get("auth", app.config.get("FEDORA_AUTH"))
-    backup = kwargs.get("backup", False)
+    backup = kwargs.get("backup", True)
     mods_base_url = "{}{}/datastreams/MODS".format(
         rest_url,
         pid)
@@ -65,33 +65,23 @@ error={} url={}""".format(
             mods_url)
     raw_xml = mods_result.text
     mods_xml = etree.XML(raw_xml)
-    # Create backup of MODS
-    if backup is True:
-        backup_filename = "{}-mods-{}.xml".format(
-            pid, 
-	    start.strftime("%Y-%m-%d")).replace(":", "_")
-        backup_mods_filepath = os.path.join(
-            BASE_DIR, 
-            "repair",
-            "backups",
-            backup_filename)
-        if not os.path.exists(backup_mods_filepath):
-            with open(backup_mods_filepath, "wb+") as mods_file:
-                mods_file.write(raw_xml.encode())
-    old_value_elements = mods_xml.findall(field_xpath)
+    old_value_elements = mods_xml.findall(field_xpath, {"mods": str(MODS)})
     for element in old_value_elements:
         if element.text == old_value:
             element.text = new_value
+    url_params = {"controlGroup": "M",
+        "dsLabel": "MODS",
+        "mimeType": "text/xml"}
+    if backup is True:
+        url_params["versionable"] = "true"
     mods_update_url = "{}?{}".format(
         mods_base_url,
-        urllib.parse.urlencode({"controlGroup": "M",
-            "dsLabel": "MODS",
-            "mimeType": "text/xml"}))
+        urllib.parse.urlencode(url_params))
     raw_xml = etree.tostring(mods_xml)
     put_result = requests.post(
         mods_update_url,
-		files={"content":  raw_xml},
-        auth=CONF.FEDORA_AUTH)
+	files={"content":  raw_xml},
+        auth=app.config.get('FEDORA_AUTH'))
     if put_result.status_code < 300:
         return True
     else:
@@ -138,3 +128,31 @@ def update_multiple(**kwargs):
         end.isoformat(),
         (end-start).seconds / 60.0)
     yield msg
+
+
+def get_collection_pids(config, pid):
+    """Function takes a Flask app config and a collection PID,
+    returns all children PIDS
+
+    Args:
+        config: Flask app config
+        pid: PID of collection
+    """
+    output = []
+    sparql = """SELECT DISTINCT ?s
+WHERE {{
+  ?s <fedora-rels-ext:isMemberOfCollection> <info:fedora/{}> .
+}}""".format(pid)
+    children_response = requests.post(
+            config.get("RI_SEARCH"),
+            data={"type": "tuples",
+                  "lang": "sparql",
+                  "format": "json",
+                  "query": sparql},
+            auth=config.get("FEDORA_AUTH"))
+    children = children_response.json().get('results')
+    for row in children:
+        iri = row.get('s')
+        child_pid = iri.split("/")[-1]
+        output.append(child_pid)
+    return output

@@ -360,16 +360,6 @@ def repository_move(source_pid,collection_pid):
                                     mimeType="application/rdf+xml",
                                     content=etree.tostring(rels_ext))
 
-def repository_update(pid,mods_snippet):
-    """
-    Helper function takes a pid and a mods_snippet and either replaces the
-    existing mods or adds the mods snippet to the MODS datastream.
-
-    :param pid: PID of Fedora object
-    :param mods_snippet: MODS snippet
-    """
-    pass
-
 def extract_creators(mods_xml):
     """Extracts all creators from a mods_xml file
 
