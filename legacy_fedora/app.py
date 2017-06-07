@@ -11,7 +11,6 @@ from concurrent.futures import ThreadPoolExecutor
 from elasticsearch import Elasticsearch
 from flask import Flask, render_template, request, redirect, Response
 from flask import jsonify, flash, url_for, abort
-from flask_socketio import SocketIO, emit
 from .forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
 from .forms import MODSReplacementForm, MODSSearchForm
 from .forms import EditFedoraObjectFromTemplate, LoadMODSForm 
@@ -22,9 +21,9 @@ from .repairer import update_multiple, update_mods
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('config.py')
-socketio = SocketIO(app)
 
-executor = ThreadPoolExecutor(2)
+
+#executor = ThreadPoolExecutor(2)
 
 ACTIVE_MSGS = []
 BACKEND_THREAD = None
@@ -36,14 +35,36 @@ class IndexerThread(threading.Thread):
         threading.Thread.__init__(self)
         self.indexer = Indexer(app=app, 
             elasticsearch=kwargs.get('elasticsearch'))
-        self.job = kwargs.get("job")
         self.pid = kwargs.get("pid")
+        self.job = kwargs.get("job")
         
     def run(self):
         if self.job.lower().startswith("full"):
             self.indexer.reset()
             self.indexer.index_collection(self.pid)
         return 
+
+class IndexerServerSideEvent(object):
+
+    def __init__(self, **kwargs):
+        self.job = kwargs.get("job")
+        self.pid = kwargs.get("pid")
+        self.data = kwargs.get("message")
+        self.desc_map = {
+            self.job: "job",
+            self.pid: "pid",
+            self.data: "data"
+        }
+       
+
+    def encode(self):
+        if not self.data:
+            return ""
+        lines = []
+        for key, val in self.desc_map.items():
+            if key:
+                lines.append("{0}: {1}".format(val, key))
+        return "{}\n\n".format("\n".join(lines))
 
 class RepairerThread(threading.Thread):
 
@@ -116,20 +137,22 @@ def save_mods(pid):
 def indexing_status():
     if BACKEND_THREAD is None:
         # Check in 15 seconds
-        time.sleep(15)
-        if BACKEND_THREAD is None:
-            msg = "Finished, Indexer no longer active"
-    elif len(BACKEND_THREAD.indexer.messages) > 0:
-        msg = BACKEND_THREAD.indexer.messages.pop(0)
+        #time.sleep(15)
+        #if BACKEND_THREAD is None:
+        #    msg     
+        return jsonify({"message": "Indexer doesn't exist"})
     else:
-        msg = "Finished"
-    return jsonify({"message": msg})
-    #socketio.emit('status event', {"message": msg})
-
-@socketio.on('index status')
-def handle_index_status(data):
-    print(data)
-    emit('indexer status', 1)
+        if len(BACKEND_THREAD.indexer.messages) > 0:
+            msg = BACKEND_THREAD.indexer.messages.pop(0)
+        else:
+            msg = "&hellip;continue indexing {0}".format(
+                BACKEND_THREAD.pid)
+        ev = IndexerServerSideEvent(message=msg, 
+            job=BACKEND_THREAD.job,
+            pid=BACKEND_THREAD.pid)
+        return Response(ev.encode(),
+                        mimetype="text/event-stream")
+    
 
 def __index_pid__(search_idx, pid):
     indexer = Indexer(app=app, 
@@ -159,12 +182,11 @@ def index_repository():
             BACKEND_THREAD = IndexerThread(
                 elasticsearch=elastic_host,
                 job="full", 
-                pid="coccc:root")
+                pid=app.config.get("INITIAL_PID"))
             BACKEND_THREAD.start()
             return jsonify({"message": "Started Full Indexing"})
         else:
             return jsonify({"message": "Unknown Indexing option"})
- 
     return render_template('fedora_utilities/index-repository.html',
         index_form=index_form)
 
@@ -176,6 +198,7 @@ def mods_replacement():
     if replace_form.validate_on_submit():
         collection_pid = replace_form.collection_pid.data
         pid_listing = replace_form.pid_listing.data.split(",")
+        search_index = replace_form.indices.data
         xpath = replace_form.select_xpath.data
         old_value = replace_form.old_value.data
         new_value = replace_form.new_value.data
@@ -188,13 +211,13 @@ def mods_replacement():
                 xpath=xpath,
                 old=old_value,
                 new=new_value)
+            __index_pid__(search_index, pid)
             flash("Replaces {} old {} with {} for pid {}".format(
                 xpath,
                 old_value,
                 new_value,
                 pid))
-            
-        #return jsonify({"total": len(pid_listing)})
+                   #return jsonify({"total": len(pid_listing)})
         return redirect(url_for('mods_replacement'))
     return render_template('fedora_utilities/mods-replacement.html',
         replace_form=replace_form,
@@ -236,5 +259,4 @@ def search_pids():
     
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', debug=True, port=9455)
-    #app.run(host='0.0.0.0', debug=True, port=9455)
+    app.run(host='0.0.0.0', debug=True, port=9455)

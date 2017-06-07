@@ -96,14 +96,10 @@
 {% endblock %}
 
 {% block more_js %}
-<script src="{{ url_for('static', filename='js/socket.io.js') }}" type="text/javascript"></script>
-{#<script type="text/javascript" charset='utf-8'>
-    var socket = io.connect("http://" + document.domain + ":" + location.port);
-    socket.on('connect', function() {
-        socket.emit('index status', {});
+<script type="text/javascript" charset='utf-8'>
+    //var socket = io.connect("http://" + document.domain + ":" + location.port);
 
-    });
-</script>#}
+</script>
 <script>
     $("#index-form").submit(function() {
         var url = $(this).attr('action');
@@ -113,6 +109,7 @@
                 return false;
             }
         }
+        var msgs = $("#messages");
         $.ajax({
             data: $(this).serialize(),
             type: $(this).attr('method'),
@@ -120,24 +117,13 @@
             success: function(response) {
                 $("#index-status").removeClass("invisible");
                 for(i in response) {
-                    $("#messages").append("<li>" + response[i] + "</li>");
+                    msgs.append("<li>" + response[i] + "</li>");
                 }
-                timer = setInterval(function() {
-                    $.getJSON("{{ url_for('indexing_status') }}",
-                        function(data) {
-                           for(i in data) { 
-                               var message = data[i];
-                               console.log(message);
-                               if(message.lastIndexOf("Finished", 0) === 0) {
-                                    clearInterval(timer);
-                               }
-                               if(message.length > 0) {
-                                   $("#messages").append("<li>" + message + "</li>");
-                               }
-                           }
-                     });
-                }, 30000);
-           }
+                var event_source = new EventSource("{{ url_for('indexing_status') }}");
+                event_source.onmessage = function(e) {
+                    msgs.prepend("<li>" + e.data + "</li>");
+                };
+            }
         });
         return false;
     });
