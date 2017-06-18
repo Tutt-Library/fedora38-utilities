@@ -109,11 +109,12 @@ def names2rdf(mods):
             if roleTerm.text is None:
                 continue
             field = generate_field_name(roleTerm.text)
-            if hasattr(output, field):
-                if not name.text in output[field]:
-                    output[field].append(name.text)
+            if field in output:
+                output[field].append(name.text)
             else:
                 output[field] = [name.text,]
+    for key, val in output.items():
+        output[key] = list(set(val))
     return output
 
 def notes2rdf(mods):

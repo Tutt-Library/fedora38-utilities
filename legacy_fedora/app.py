@@ -10,7 +10,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from elasticsearch import Elasticsearch
 from flask import Flask, render_template, request, redirect, Response
-from flask import jsonify, flash, url_for, abort
+from flask import jsonify, flash, url_for, abort, session
 from .forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
 from .forms import MODSReplacementForm, MODSSearchForm
 from .forms import EditFedoraObjectFromTemplate, LoadMODSForm 
@@ -141,12 +141,18 @@ def indexing_status():
         #if BACKEND_THREAD is None:
         #    msg     
         return jsonify({"message": "Indexer doesn't exist"})
+    # Arbitrary limit of 50 continue
+    elif session['continue'] > app.config.get('CONTINUE_LIMIT', 50):
+       return jsonify({"message": "Indexing complete"}) 
     else:
         if len(BACKEND_THREAD.indexer.messages) > 0:
             msg = BACKEND_THREAD.indexer.messages.pop(0)
+            if session['continue'] > 0:
+                session['continue'] -= 1
         else:
             msg = "&hellip;continue indexing {0}".format(
                 BACKEND_THREAD.pid)
+            session['continue'] += 1
         ev = IndexerServerSideEvent(message=msg, 
             job=BACKEND_THREAD.job,
             pid=BACKEND_THREAD.pid)
@@ -156,7 +162,7 @@ def indexing_status():
 
 def __index_pid__(search_idx, pid):
     indexer = Indexer(app=app, 
-        elasticsearch=search_index)
+        elasticsearch=search_idx)
     ancestors = indexer.__get_ancestry__(pid)
     ancestors.reverse()
     indexer.index_pid(pid, ancestors[-1], ancestors)
@@ -174,6 +180,7 @@ def index_pid():
 def index_repository():
     global BACKEND_THREAD
     index_form = IndexRepositoryForm(csrf_enabled=False)
+    session['continue'] = 0
     if index_form.validate_on_submit():
         if index_form.index_choice.data.startswith("0"):
             return jsonify({"message": "Started Incremental Indexing"})
