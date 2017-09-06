@@ -35,7 +35,7 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
     keywords='fedora3.8 library',
-    packages=find_packages(),
+    packages=find_packages(exclude=("instance",)),
     install_requires=['elasticsearch',
                       'Flask',
                       'Flask-WTF',
