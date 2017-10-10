@@ -11,8 +11,8 @@ from concurrent.futures import ThreadPoolExecutor
 from elasticsearch import Elasticsearch
 from flask import Flask, render_template, request, redirect, Response
 from flask import jsonify, flash, url_for, abort, session
-from .forms import AddFedoraObjectFromTemplate, IndexRepositoryForm
-from .forms import MODSReplacementForm, MODSSearchForm
+from .forms import AddFedoraBatchFromTemplate, AddFedoraObjectFromTemplate
+from .forms import MODSReplacementForm, MODSSearchForm, IndexRepositoryForm
 from .forms import EditFedoraObjectFromTemplate, LoadMODSForm 
 from .helpers import create_mods, generate_stubs, load_edit_form, build_mods
 from .helpers import save_mods_xml
@@ -90,9 +90,21 @@ def default():
 def about():
     return render_template("fedora_utilities/about.html")
 
+@app.route("/add_object", methods=["GET", "POST"])
+def add_object():
+    object_form = AddFedoraObjectFromTemplate(csrf_enabled=False)
+    if object_form.validate_on_submit():
+        new_pid = "coccc:1223"
+        return jsonify({"success": True, 
+                        "pid": new_pid})
+    else:
+        return render_template("fedora_utilities/object-ingest.html",
+            object_form=object_form)
+        
+
 @app.route("/add_stub", methods=["GET", "POST"])
 def add_stub():
-    ingest_form = AddFedoraObjectFromTemplate(csrf_enabled=False)
+    ingest_form = AddFedoraBatchFromTemplate(csrf_enabled=False)
     if ingest_form.validate_on_submit():
         mods_xml = create_mods(request.form)
         return jsonify(generate_stubs(

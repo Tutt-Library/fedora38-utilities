@@ -1,0 +1,227 @@
+{% extends 'fedora_utilities/app.html' %}
+
+{% block utility_name %}Add Object to Fedora{% endblock %}
+
+{% block fedora_form %}
+<div class="jumbotron">
+   <form id="batch-form" 
+          method="POST" action="{{ url_for('add_object') }}" 
+          id="object_form" enctype="multipart/form-data" >
+    <h3>Title(s)</h3>
+    <div class="row">
+        <section class="col-md-8">
+            <div class="form-group {% if object_form.title.errors %}alert alert-danger{% endif %}">
+                 {{ object_form.title.label }}*
+                 {{ object_form.title(class_='form-control') }}
+                 <small class="form-text text-muted">{{ object_form.title.description }}</small>
+                 {% if object_form.title.errors %}
+                    <div class="invalid-feedback">
+                    {% for error in object_form.title.errors %}
+                        {{ error }}{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                    </div>
+                 {% endif %}  
+            </div> 
+            <div class="form-group">
+                {{ object_form.alt_title.label }}
+                {{ object_form.alt_title(class_='form-control') }}   
+                <small class="form-text text-muted">
+                    {{ object_form.alt_title.description }}
+                </small>
+            </div> 
+        </section>
+    </div>
+    <hr>
+    <h3>Creators, Contributors (personal &amp; corporate)</h3>
+     <div class="row">
+        <section class="col-md-6">
+            <div class="form-group {% if object_form.creators.errors %}alert alert-danger{% endif %}">
+                {{ object_form.creators.label }} <a href="#" class="tag tag-primary" 
+                     onclick="NewInput(this, 'creators')">+</a>
+                {% for row in object_form.creators %}
+                 {{ row(class_='form-control') }}
+                {% endfor %}
+                <small class="form-text text-muted">
+                    {{ object_form.creators.description }}
+                </small>
+                {% if object_form.creators.errors %}
+                    <div class="invalid-feedback">
+                    {% for error in object_form.creators.errors %}
+                        {{ error }}{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ object_form.corporate_creators.label }} <a href="#" class="tag tag-primary" 
+                    onclick="NewInput(this, 'corporate_creators')">+</a>
+                {% for row in object_form.corporate_creators %}
+                    {{ row(class_='form-control') }}
+                {% endfor %}
+                <small class="form-text text-muted">
+                    {{ object_form.corporate_creators.description }}
+                </small>
+            </div>
+        </section>
+        <section class="col-md-6">
+            <div class="form-group">
+                {{ object_form.contributors.label }} <a href="#" class="tag tag-primary" 
+                     onclick="NewInput(this, 'contributors')">+</a>
+                 {% for row in object_form.contributors %}
+                     {{ row(class_='form-control') }}
+                 {% endfor %}
+                <small class="form-text text-muted">
+                    {{ object_form.contributors.description }}
+                </small>
+            </div>
+            <div class="form-group">
+                {{ object_form.corporate_contributors.label }} <a href="#" class="tag tag-primary" 
+                    onclick="NewInput(this, 'corporate_contributors')">+</a>
+                {% for row in object_form.corporate_contributors %}
+                {{ row(class_='form-control') }}
+                {% endfor %}
+                <small class="form-text text-muted">
+                    {{ object_form.corporate_contributors.description }}
+                </small>
+             </div>
+        </section>
+    </div>
+    <hr>
+    <h3>Abstract, Administrative and Descriptive Notes</h3>
+    <div class="row">
+        <section class="col-md-6">
+            <div class="form-group">
+                {{ object_form.abstract.label }}
+                {{ object_form.abstract(class_='form-control', rows=5) }}
+                <small class="form-text text-muted">
+                {{ object_form.abstract.description }}
+                </small>
+            </div>
+            <div class="form-group">
+                {{ object_form.admin_notes.label }}
+                {% for row in object_form.admin_notes %}
+                    {{ row(class_='form-control', rows=4) }}
+                {% endfor %}
+                <small class="form-text text-muted">
+                {{ object_form.admin_notes.description }}
+                </small>
+ 
+            </div>
+        </section>
+        <section class="col-md-6">
+            <div class="form-group">
+                {{ object_form.description.label }}
+                {{ object_form.description(class_='form-control', rows=5) }}
+                <small class="form-text text-muted">
+                {{ object_form.description.description }}
+                </small>
+ 
+            </div>
+        </section>
+    </div>
+    <hr>
+    <h3>Date, Type of, Origin, Genre, Extent, &amp; Language</h3>
+    <div class="row">
+        <section class="col-md-6">
+            <div class="form-group">
+                {{ object_form.date_created.label }}
+                {{ object_form.date_created(class_='form-control') }}
+                <small class="form-text text-muted">
+                    {{ object_form.date_created.description }}
+                </small>
+            </div>
+            <div class="form-group">
+                {{ object_form.digital_origin.label }}
+                {{ object_form.digital_origin(class_='form-control') }}
+                <small class="form-text text-muted">
+	            {{ object_form.digital_origin.description }}
+                </small>
+            </div>
+            <div class="form-group">
+                {{ object_form.extent.label }}
+                {{ object_form.extent(class_='form-control', rows=4) }}
+                <small class="form-text text-muted">
+	            {{ object_form.extent.description }}
+                </small>
+            </div>
+        </section>
+        <section class="col-md-6">
+            <div class="form-group">
+                {{ object_form.type_of_resources.label }}
+                {% for row in object_form.type_of_resources %}
+                    {{ row(class_='form-control') }}
+                {% endfor %}
+                <small class="form-text text-muted">
+                    {{ object_form.type_of_resources.description }}
+                </small>
+            </div>
+            <div class="form-group">
+                {{ object_form.genre.label }}
+                {{ object_form.genre(class_='form-control') }}
+                <small class="form-text text-muted">
+                    {{ object_form.genre.description }}
+                </small>
+            </div>
+            <div class="form-group">
+                {{ object_form.languages.label }}
+                {% for row in  object_form.languages %}
+                    {{row(class_='form-control') }}
+                {% endfor %}
+                <small class="form-text text-muted">
+                    {{ object_form.languages.description }}
+                </small>
+
+            </div>
+        </section> 
+    </div>
+    <hr>
+    <h3>Topical, Geographical, People, &amp; Organization Subjects</h3>
+    <hr>
+    <h3>Object Properties</h3>
+    <div class="row">
+        <section class="col-md-6">
+            <div class="form-group">
+                {{ object_form.content_models.label }}
+                {{ object_form.content_models(class_='form-control') }}
+            </div>
+        </section>
+        <section class="col-md-6">
+            <div class="form-group {% if object_form.collection_pid.errors %}alert alert-danger{% endif %}">
+                {% for error in object_form.collection_pid.errors %}
+                     ERROR: {{ error }}
+                {% endfor %}
+                {{ object_form.collection_pid.label }}
+                {{ object_form.collection_pid(class_='form-control') }}
+                <small class="form-text text-muted">
+                 {{ object_form.collection_pid.description }}   
+                </small>
+             </div>
+        </section>
+    </div>
+    <hr>
+    <h3>Datastream Upload</h3>
+    <div class="row">
+        <section class="col-md-6">
+            {{ object_form.digital_object(class_='form-control') }}
+            <small class="form-text text-muted">
+                 {{ object_form.digital_object.description }}   
+            </small>
+        </section>
+        <section class="col-md-6">
+            {{ object_form.thumbnail(class='form-control') }}
+            <small class="form-text text-muted">
+                {{ object_form.thumbnail.description }}
+            </small>
+        </section> 
+    </div>
+    <div class="row">
+        <section class="col-md-6 col-md-offset-6">
+            <div class="btn-group">
+                <input type="submit" value="Add Object" class="btn btn-lg btn-primary"></input>
+                <input type="reset" value="Reset Form" class="btn btn-lg btn-warning"></input>
+            </div>
+        </section>
+    </div>
+    </form>
+</div>
+{% endblock %}

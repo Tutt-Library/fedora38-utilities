@@ -4,7 +4,7 @@ from flask_wtf import FlaskForm as Form
 from wtforms import SelectField, StringField, TextAreaField
 from wtforms.fields.html5 import DateField
 from wtforms.fields import FieldList
-from wtforms import validators
+from wtforms import validators, FileField
 
 DIGITAL_ORIGIN = [('born digital','born digital'),
                   ('reformatted digital', 'reformatted digital'),
@@ -157,36 +157,71 @@ SEARCH_INDICES = [('li-testdocker1', 'Test Environment (li-testdocker1)'),
 
 class FedoraObjectFromTemplate(Form):
     abstract = TextAreaField("Abstract",
+        description="""A summary of the content of the resource.""",
         validators=[validators.length(max=1500)])
-    admin_notes = FieldList(TextAreaField('Administrative Notes',
-                               validators=[validators.length(max=1500)]),
+    admin_notes = FieldList(
+        TextAreaField('Administrative Notes',
+            validators=[validators.length(max=1500)]),
+        description="""Administrative Note related to the collection, cataloging,
+or management of the resource.""",
         min_entries=1)
-    alt_title = StringField('Alternative Title')
+    alt_title = StringField('Alternative Title',
+        description="""Varying form of the title if it contributes to the 
+further identification of the item""")
     collection_pid = StringField("PID of Parent Collection",
+        description="""PID of the Collection that the resource belongs too.""",
         validators=[validators.required(), validators.length(max=20)])
     content_models = SelectField('Islandora Content Model',
-                                  choices=CONTENT_MODELS,
-                                  default='compoundCModel')
-    contributors = FieldList(StringField("Contributors"), min_entries=1)
-    corporate_contributors = FieldList(StringField("Corporate Contributors"), min_entries=1)
-    corporate_creators = FieldList(StringField("Corporate Creators"), min_entries=1)
-    creators = FieldList(StringField("Creators"), min_entries=1)
-    date_created = StringField('Date Created')
+        choices=CONTENT_MODELS,
+        default='compoundCModel',
+        validators=[validators.required()])
+    contributors = FieldList(StringField("Contributors"), 
+        description="""A person responsible for making contributions to the 
+resource.""",
+        min_entries=1)
+    corporate_contributors = FieldList(StringField("Corporate Contributors"), 
+        description="""An organization responsible for making contributions to the 
+resource.""",
+        min_entries=1)
+    corporate_creators = FieldList(StringField("Corporate Creators"), 
+        description="""An organization responsible for the intellectual or 
+artistic content of a resource.""", 
+        min_entries=1)
+    creators = FieldList(
+        StringField("Creators"), 
+        min_entries=1,
+        description="""A person responsible for the intellectual or artistic 
+content of a resource.""" 
+    )
+    date_created = StringField('Date Created', 
+        description="""Date of object creation, NOT the date metadata was entered. 
+Use YYYY-MM-DD, YYYY-MM, or YYYY formats""")
     digital_origin = SelectField('Digital Origin',
-        choices=DIGITAL_ORIGIN)
+        choices=DIGITAL_ORIGIN,
+        description="""The method by which a resource achieved digital form.""")
     description = TextAreaField('Description',
-                                validators=[validators.optional(), 
-                                            validators.length(max=1500)])
+        description="""General information relating to the physical description of 
+the resource.""",
+        validators=[validators.optional(), 
+            validators.length(max=1500)])
     extent = TextAreaField('Extent',
-                            validators=[validators.optional(), 
-                                       validators.length(max=1500)])
+        description="""A statement of the number and specific material of the units 
+of the resource that express physical extent.""",
+        validators=[validators.optional(), 
+                    validators.length(max=1500)])
     form = StringField('Form')
     frequency_free_form = StringField('Other')
     frequency = SelectField('Frequency',
         choices=MARC_FREQUENCY)
     genre = SelectField('Genre',
-        choices=GENRE)
-    languages = FieldList(SelectField('Languages', choices=LANGUAGES), min_entries=1)
+        choices=GENRE,
+        description="""A term or terms that designate a category characterizing
+a particular style, form, or content, such as artistic, musical, literary 
+composition, etc.""")
+    languages = FieldList(SelectField('Languages', choices=LANGUAGES), 
+        min_entries=1,
+        description="""A designation of the language in which the content of 
+a resource is expressed, NOT the language of cataloging.""")
     organizations = StringField("Organizations",
                                 validators=[validators.optional(), 
                                             validators.length(max=255)],
@@ -199,10 +234,19 @@ class FedoraObjectFromTemplate(Form):
                                  default=PLACE)
     subject_topics = StringField('Subject -- Topic')
     title = StringField('Title',
-            validators=[validators.length(max=120), validators.optional()])
-    type_of_resources = FieldList(StringField('Type of Resource'), min_entries=1)
+        description="""A word, phrase, character, or group of characters that 
+constitutes the chief title of a resource, i.e., the title normally used when 
+citing the resource.""",
+            validators=[validators.length(max=120), validators.required()])
+    type_of_resources = FieldList(StringField('Type of Resource'), min_entries=1,
+        description="""A term that specifies the characteristics and general type 
+of content of the resource.""")
 
 class AddFedoraObjectFromTemplate(FedoraObjectFromTemplate):
+    digital_object = FileField(description="Primary datastream for resource")
+    thumbnail = FileField(description="Optional thumbnail image for resource")
+
+class AddFedoraBatchFromTemplate(FedoraObjectFromTemplate):
     number_objects = StringField('Number of stub records', default=1)
 
 class EditFedoraObjectFromTemplate(FedoraObjectFromTemplate):

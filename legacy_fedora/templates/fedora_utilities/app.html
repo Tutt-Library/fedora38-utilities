@@ -25,6 +25,10 @@
   {# START fedora batch nav DIV #}
   <div class="col-sm-3 col-md-2">
    <ul class="list-group" >
+    <li class="list-group-item {% if request.path.endswith('add_object') %} bg-warning{% endif %}">
+        <i class="fa fa-upload" aria-hidden="true"></i>
+       <a href="{{ url_for('add_object') }}">Add Object</a>
+    </li>
     <li class="list-group-item {% if request.path.endswith('add_stub') %} bg-warning{% endif %}">
         <i class="fa fa-th" aria-hidden="true"></i>
        <a href="{{ url_for('add_stub') }}">Batch Creator</a>
@@ -45,7 +49,7 @@
   {# END fedora batch nav DIV #}
   </div>
    {# START views DIV #}
-   <div class="col-sm-8 col-md-7">
+   <div class="col-sm-9 col-md-10">
    
    <div> 
    <h1>Fedora 3.8 Utilities</h1>
