@@ -94,9 +94,7 @@ def about():
 def add_object():
     object_form = AddFedoraObjectFromTemplate(csrf_enabled=False)
     if object_form.validate_on_submit():
-        new_pid = "coccc:1223"
-        return jsonify({"success": True, 
-                        "pid": new_pid})
+        return build_mods(object_form)
     else:
         return render_template("fedora_utilities/object-ingest.html",
             object_form=object_form)

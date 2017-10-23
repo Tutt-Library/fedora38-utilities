@@ -60,9 +60,10 @@ def __create_origin_info__(form, mods):
             "mods:placeTerm")
         place_term.text = form.publication_place.data
     if len(form.frequency.data) > 0:
-        frequency = etree.SubElement(origin_info,
-            "mods:frequency")
-        frequency.text = form.frequency.data
+        if not form.frequency.data.startswith("choose"):
+            frequency = etree.SubElement(origin_info,
+                "mods:frequency")
+            frequency.text = form.frequency.data
 
 def __create_phy_desc__(form, mods):
     phys_desc = etree.SubElement(mods, "mods:physicalDescription")
@@ -75,15 +76,19 @@ def __create_phy_desc__(form, mods):
         dig_origin.text = form.digital_origin.data
     
 
-def __create_title__(mods, title_str, type_=None, subtitle=None):
+def __create_title__(mods, form):
     title_info = etree.SubElement(mods,
         "mods:titleInfo")
-    if type_ is not None:
-        title_info.attrib["type"] = type_
     title = etree.SubElement(title_info,
         "mods:title")
-    title.text = title_str
-    if subtitle is not None:
+    main_title = form.title
+    alt_title = form.alt_title
+    if len(alt_title.data) > 0:
+        title_info.attrib["type"] = "alternative"
+        title.text = alt_title.data
+    else: 
+        title.text = main_title.data
+    if "subtitle" in form and form.subtitle is not None:
         sub_title = etree.SubElement(title_info,
             "mods:subTitle")
         sub_title.text = subtitle
@@ -117,8 +122,7 @@ def build_mods(form):
     __create_phy_desc__(form, mods)
     if len(form.title.data) > 0:
         __create_title__(mods, 
-            form.title.data, 
-            subtitle=form.sub_title.data)
+            form)
     reparsed = xml.dom.minidom.parseString(
         etree.tostring(mods, "unicode"))
     return reparsed.toprettyxml(encoding='utf-8').decode()

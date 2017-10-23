@@ -147,6 +147,17 @@ MARC_FREQUENCY = [('choose', 'Choose...'),
                   ('Triennial', 'Triennial - every 3 years'),
                   ('Completely irregular', 'Completely irregular')]
 
+TYPE_OF_RESOURCE = [('text', 'Text or Language Material'),
+                    ('cartographic', 'Maps or other Cartographic Materials'),
+                    ('notated music', 'Notated Music'),
+                    ('sound recording', 'Sound Recording, mixture of music and non-music recording'),
+                    ('sound recording-musical', 'Musical Sound Recording'),
+                    ('sound recording-nonmusical', 'Spoken word or other Non-music sound recording'),
+                    ('still image', 'Still Image'),
+                    ('moving image', 'Video or Film, Moving Image'),
+                    ('three dimensional object', 'Three Dimensional Object'),
+                    ('software, multimedia', 'Software or other electronic Multimedia'),
+                    ('mixed material', 'Mixed Material')]
 
 RIGHTS_STATEMENT = "Copyright restrictions apply. Contact Colorado College for permission to publish."
 PLACE = 'Colorado Springs (Colo.)'
@@ -226,19 +237,39 @@ a resource is expressed, NOT the language of cataloging.""")
                                 validators=[validators.optional(), 
                                             validators.length(max=255)],
                                 default=INSTITUTION_NAME)
+    publisher = StringField('Publisher', default=PUBLISHER,
+        description="""The name of the entity that published, printed, 
+distributed, released, issued, or produced the resource""")
+    publication_place = StringField("Place of Publication", 
+        default=PUBLICATION_PLACE,
+        description="""Name of a place associated with the issuing, publication, 
+release, distribution, manufacture, production, or origin of a resource""")
     rights_statement = TextAreaField('Rights Statement',
                                       default=RIGHTS_STATEMENT)
-    subject_dates = StringField('Subject -- Dates')
-    subject_people = StringField('Subject -- People')
+    subject_dates = StringField('Subject -- Dates',
+        description="""Used for chronological subject terms or temporal coverage.""")
+    subject_orgs = StringField('Subject -- Organization',
+        description="""A name of an organization that is used as a subject.""")
+    subject_people = StringField('Subject -- Person',
+        description="""A name of a Person used as a subject.""" 
+    )
+    
     subject_places = StringField('Subject -- Places',
-                                 default=PLACE)
-    subject_topics = StringField('Subject -- Topic')
+        default=PLACE,
+        description="""Used for geographic subject terms that are not parsed as hierarchical 
+    geographics"""
+    )
+    subject_topics = StringField('Subject -- Topic',
+        description=""""topic" is used as the tag for any topical subjects that are not appropriate in the 
+<geographic>, <temporal>, <titleInfo>, or <name> subelements.""")
     title = StringField('Title',
         description="""A word, phrase, character, or group of characters that 
 constitutes the chief title of a resource, i.e., the title normally used when 
 citing the resource.""",
             validators=[validators.length(max=120), validators.required()])
-    type_of_resources = FieldList(StringField('Type of Resource'), min_entries=1,
+    type_of_resources = FieldList(SelectField('Type of Resource', 
+                                              choices=TYPE_OF_RESOURCE),
+        min_entries=1,
         description="""A term that specifies the characteristics and general type 
 of content of the resource.""")
 
