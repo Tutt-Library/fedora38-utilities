@@ -211,21 +211,27 @@
         <section class="col-md-6">
             <div class="form-group">
                 {{ object_form.subject_topics.label }}
-                {{ object_form.subject_topics(class_='form-control') }}
+                {% for row in object_form.subject_topics %}
+                {{ row(class_='form-control') }}
+                {% endfor %}
                 <small class="form-text text-muted">
                 {{ object_form.subject_topics.description }}
                 </small>
             </div>
             <div class="form-group">
                 {{ object_form.subject_places.label }}
-                {{ object_form.subject_places(class_="form-control") }}
+                {% for row in object_form.subject_places %}
+                {{ row(class_="form-control") }}
+                {% endfor %}
                 <small class="form-text text-muted">
                 {{ object_form.subject_places.description }}
                 </small>
             </div>
             <div class="form-group">
                {{ object_form.subject_people.label }}
-               {{ object_form.subject_people(class_="form-control") }}
+                {% for row in object_form.subject_people %}
+               {{ row(class_="form-control") }}
+                {% endfor %}
                <small class="form-text text-muted">
                {{ object_form.subject_people.description }}
                </small>
@@ -234,7 +240,9 @@
         <section class="col-md-6">
             <div class="form-group">
                 {{ object_form.subject_dates.label }}
-                {{ object_form.subject_dates(class_="form-control") }}
+                {% for row in object_form.subject_dates %}
+                {{ row(class_="form-control") }}
+                {% endfor %}
                 <small class="form-text text-muted">
                 {{ object_form.subject_dates.description }}
                 </small>
@@ -242,7 +250,9 @@
             </div>
            <div class="form-group">
                 {{ object_form.subject_orgs.label }}
-                {{ object_form.subject_orgs(class_="form-control") }}
+                {% for row in object_form.subject_orgs %}
+                {{ row(class_="form-control") }}
+                {% endfor %}
                 <small class="form-text text-muted">
                 {{ object_form.subject_orgs.description }}
                 </small>
@@ -257,6 +267,13 @@
                 {{ object_form.content_models.label }}
                 {{ object_form.content_models(class_='form-control') }}
             </div>
+            <div class="form-group">
+                {{ object_form.parent_pid.label }}
+                {{ object_form.parent_pid(class_='form-control') }}
+                <small class="form-text text-muted">
+                {{ object_form.parent_pid.description }}
+                </small>
+            </div>
         </section>
         <section class="col-md-6">
             <div class="form-group {% if object_form.collection_pid.errors %}alert alert-danger{% endif %}">
@@ -269,6 +286,13 @@
                  {{ object_form.collection_pid.description }}   
                 </small>
              </div>
+            <div class="form-group">
+                {{ object_form.ordering.label }}
+                {{ object_form.ordering(class_='form-control') }}
+                <small class="form-text text-muted">
+                {{ object_form.ordering.description }}
+                </small>
+            </div>
         </section>
     </div>
     <hr>
@@ -298,3 +322,13 @@
     </form>
 </div>
 {% endblock %}
+
+{% block more_js %}
+<script>
+    function NewInput(btn, field_id) {
+        var last_field = $(btn).prev();
+        last_field.after("<br><input name='" + field_id + "' type='text', class='form-control'></input>");
+    }
+
+</script>
+{% endblock more_js %}

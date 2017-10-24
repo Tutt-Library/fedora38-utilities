@@ -22,12 +22,27 @@ JINJA_ENV = Environment(loader=FileSystemLoader(
 
 DEFAULT_NS = {
     "fedora_manage": "http://www.fedora.info/definitions/1/0/management/",
-    "mods": 'http://www.loc.gov/mods/v3'}
-
+    "mods": 'http://www.loc.gov/mods/v3',
+    "dc": "http://purl.org/dc/elements/1.1/", 
+    "fedora": "info:fedora/fedora-system:def/relations-external#",
+    "fedora-model": "info:fedora/fedora-system:def/model#",
+    "islandora": "http://islandora.ca/ontology/relsext#", 
+    "oai_dc": "http://www.openarchives.org/OAI/2.0/oai_dc/", 
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#", 
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#"}
+ 
 for key, value in DEFAULT_NS.items():
+    print(key, value)
     etree.register_namespace(key, value)
 
-def __create_name__(mods, name_str, type_, role_str):
+def __create_language__(mods, lang_str):
+    if len(lang_str) < 1:
+        return
+    lang = etree.SubElement(mods,
+        "mods:language")
+    lang.text = lang_str
+
+def __create_name__(mods, name_str, type_, role_str=None):
     if len(name_str) < 1:
         return
     name = etree.SubElement(mods, 
@@ -74,7 +89,39 @@ def __create_phy_desc__(form, mods):
     if len(form.digital_origin.data) > 0:
         dig_origin = etree.SubElement(phys_desc, "mods:digitalOrigin")
         dig_origin.text = form.digital_origin.data
+    if len(form.extent.data) > 0:
+        extent = etree.SubElement(phys_desc, "mods:extent")
+        extent.text = form.extent.data
+    if len(form.description.data) > 0:
+        note = etree.SubElement(phys_desc, "mods:note")
+        note.text = form.description.data
     
+
+def __create_subjects__(form, mods):
+    for row in [(form.subject_dates.data, "mods:temporal"),
+                (form.subject_places.data, "mods:geographic"),
+                (form.subject_topics.data, "mods:topic")]:
+        for data in row[0]:
+            if len(data) < 1:
+                continue
+            subject = etree.SubElement(mods,
+                "mods:subject")
+            child = etree.SubElement(subject,
+                row[1])
+            child.text = data
+    for row in [(form.subject_orgs.data, "corporate"),
+                (form.subject_people.data, "personal")]:
+        for data in row[0]:
+            subject = etree.SubElement(mods,
+                "mods:subject")
+            name = etree.SubElement(subject,
+                "mods:name", 
+                attrib={"type": row[1]})
+            namePart = etree.SubElement(name,
+                "mods:namePart")
+            namePart.text = data
+
+       
 
 def __create_title__(mods, form):
     title_info = etree.SubElement(mods,
@@ -93,8 +140,13 @@ def __create_title__(mods, form):
             "mods:subTitle")
         sub_title.text = subtitle
 
+def __create_type_of_resource__(mods, type_of):
+    type_of_resource = etree.SubElement(mods,
+        "mods:typeOfResource")
+    type_of_resource.text = type_of
+    
 
-def build_mods(form):
+def build_mods(form, pid=None):
     """Builds a MODS etree populated on WTform values"""
     mods = etree.XML(
         """<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" />""")
@@ -108,8 +160,13 @@ def build_mods(form):
     if len(form.abstract.data) > 0:
         abstract = etree.SubElement(mods, "mods:abstract")
         abstract.text = form.abstract.data
+    if len(form.genre.data) > 0 and not form.genre.data.startswith("choose"):
+        genre = etree.SubElement(mods, "mods:genre")
+        genre.text = form.genre.data
+    for row in form.type_of_resources.data:
+        __create_type_of_resource__(mods, row)
     if len(form.alt_title.data) > 0:
-        __create_title__(mods, form.alt_title.data, "alternate")
+        __create_title__(mods, form)
     for row in form.creators.data:
         __create_name__(mods, row, "personal", "creator")
     for row in form.contributors.data:
@@ -118,14 +175,59 @@ def build_mods(form):
         __create_name__(mods, row, "corporate", "contributor")
     for row in form.corporate_creators.data:
         __create_name__(mods, row, "corporate", "creator")
+    for row in form.languages.data:
+        __create_language__(mods, row)
     __create_origin_info__(form, mods) 
     __create_phy_desc__(form, mods)
+    __create_subjects__(form, mods) 
     if len(form.title.data) > 0:
         __create_title__(mods, 
             form)
+    if pid is not None:
+        pid_ident = etree.SubElement(mods,
+            "mods:identifer",
+            attrib={"type": "local"})
+        pid_ident.text = pid
     reparsed = xml.dom.minidom.parseString(
         etree.tostring(mods, "unicode"))
     return reparsed.toprettyxml(encoding='utf-8').decode()
+
+def build_rels_ext(form, pid):
+    rels_ext = etree.XML(
+        '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />')
+    for code, url in DEFAULT_NS.items():
+        if code.endswith("rdf"):
+            continue
+        rels_ext.set("xmlns:{}".format(code), url)
+    rdf_description = etree.SubElement(rels_ext,
+        "rdf:Description",
+        attrib={"rdf:about": "info:fedora/{}".format(pid)})
+    if len(form.collection_pid.data) > 0:
+        member_of_collection = etree.SubElement(rdf_description,
+            "fedora:isMemberOfCollection",
+            attrib={"rdf:resource": form.collection_pid.data})
+    # Add FedoraObject Model
+    fedora_model = etree.SubElement(rdf_description,
+        "fedora-model:hasModel",
+        attrib={"rdf:resource": "info:fedora/fedora-system:FedoraObject-3.0"})
+    if len(form.content_models.data) > 0:
+        model_str = "info:fedora/{}".format(form.content_models.data)
+        content_model = etree.SubElement(rdf_description,
+            "fedora-model:hasModel",
+            attrib={"rdf:resource": model_str})
+    if len(form.parent_pid.data) > 0:
+        constituent_str = "info:fedora/{}".format(form.parent_pid.data)
+        constituent_of = etree.SubElement(rdf_description,
+            "fedora:isConstituentOf",
+            attrib={"rdf:resource": constituent_str})
+    if len(form.ordering.data) > 0:
+        sequence_number = etree.SubElement(rdf_description,
+            "islandora:isSequenceNumberOf{}".format(pid.replace(":", "_")))
+        sequence_number.text = str(int(form.ordering.data))
+    reparsed = xml.dom.minidom.parseString(
+        etree.tostring(rels_ext, "unicode"))
+    return reparsed.toprettyxml(encoding='utf-8').decode()
+        
 
 def create_mods(form):
     """Creates a MODS xml document based on form values

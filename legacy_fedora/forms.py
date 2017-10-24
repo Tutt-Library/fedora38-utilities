@@ -29,7 +29,7 @@ GENRE = [('choose', 'Choose...'),
          ("autobiography ", "Autobiography "),
          ("bibliography", "Bibliography"),
          ("biography", "Biography"),
-         ("book ", "Book "),
+         ("book", "Book "),
          ("calendar", "Calendar"),
          ("catalog", "Catalog"),
          ("chart", "Chart"),
@@ -179,7 +179,7 @@ or management of the resource.""",
     alt_title = StringField('Alternative Title',
         description="""Varying form of the title if it contributes to the 
 further identification of the item""")
-    collection_pid = StringField("PID of Parent Collection",
+    collection_pid = StringField("PID of Collection",
         description="""PID of the Collection that the resource belongs too.""",
         validators=[validators.required(), validators.length(max=20)])
     content_models = SelectField('Islandora Content Model',
@@ -233,10 +233,15 @@ composition, etc.""")
         min_entries=1,
         description="""A designation of the language in which the content of 
 a resource is expressed, NOT the language of cataloging.""")
+    ordering = StringField("Order in Compound Object",
+        description="Child display order within a Compound Object")
     organizations = StringField("Organizations",
                                 validators=[validators.optional(), 
                                             validators.length(max=255)],
                                 default=INSTITUTION_NAME)
+    parent_pid = StringField("PID of Parent",
+        description="""PID of parent object, parent object 
+must have the Compound Content Model""")
     publisher = StringField('Publisher', default=PUBLISHER,
         description="""The name of the entity that published, printed, 
 distributed, released, issued, or produced the resource""")
@@ -246,22 +251,27 @@ distributed, released, issued, or produced the resource""")
 release, distribution, manufacture, production, or origin of a resource""")
     rights_statement = TextAreaField('Rights Statement',
                                       default=RIGHTS_STATEMENT)
-    subject_dates = StringField('Subject -- Dates',
-        description="""Used for chronological subject terms or temporal coverage.""")
-    subject_orgs = StringField('Subject -- Organization',
-        description="""A name of an organization that is used as a subject.""")
-    subject_people = StringField('Subject -- Person',
-        description="""A name of a Person used as a subject.""" 
-    )
-    
-    subject_places = StringField('Subject -- Places',
-        default=PLACE,
+    subject_dates = FieldList(StringField('Subject -- Dates'),
+        description="""Used for chronological subject terms or temporal coverage.""",
+        min_entries=1)
+
+    subject_orgs = FieldList(StringField('Subject -- Organization'),
+        description="""A name of an organization that is used as a subject.""",
+        min_entries=1)
+    subject_people = FieldList(StringField('Subject -- Person'),
+        description="""A name of a Person used as a subject.""",
+        min_entries=1) 
+    subject_places = FieldList(
+        StringField('Subject -- Places',
+            default=PLACE),
+        min_entries=1, 
         description="""Used for geographic subject terms that are not parsed as hierarchical 
     geographics"""
     )
-    subject_topics = StringField('Subject -- Topic',
+    subject_topics = FieldList(StringField('Subject -- Topic'),
         description=""""topic" is used as the tag for any topical subjects that are not appropriate in the 
-<geographic>, <temporal>, <titleInfo>, or <name> subelements.""")
+<geographic>, <temporal>, <titleInfo>, or <name> subelements.""",
+        min_entries=1)
     title = StringField('Title',
         description="""A word, phrase, character, or group of characters that 
 constitutes the chief title of a resource, i.e., the title normally used when 
