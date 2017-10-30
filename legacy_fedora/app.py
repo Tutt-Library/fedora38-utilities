@@ -15,7 +15,7 @@ from .forms import AddFedoraBatchFromTemplate, AddFedoraObjectFromTemplate
 from .forms import MODSReplacementForm, MODSSearchForm, IndexRepositoryForm
 from .forms import EditFedoraObjectFromTemplate, LoadMODSForm 
 from .helpers import create_mods, generate_stubs, load_edit_form, build_mods
-from .helpers import save_mods_xml, build_rels_ext
+from .helpers import save_mods_xml, build_rels_ext, new_fedora_object
 from .indexer import Indexer
 from .repairer import update_multiple, update_mods
 
@@ -94,11 +94,8 @@ def about():
 def add_object():
     object_form = AddFedoraObjectFromTemplate(csrf_enabled=False)
     if object_form.validate_on_submit():
-        #! Should call Fedora to Generate new PID
-        pid = "coccc:34567"
-        mods = build_mods(object_form, pid)
-        rels_ext = build_rels_ext(object_form, pid)
-        return rels_ext
+        pid = new_fedora_object(object_form, app.config)
+        return jsonify({"pid": pid })
     else:
         return render_template("fedora_utilities/object-ingest.html",
             object_form=object_form)

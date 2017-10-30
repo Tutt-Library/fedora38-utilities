@@ -3,6 +3,7 @@
 """
 __author__ = "Jeremy Nelson"
 
+import bibcat
 import datetime
 from . import forms
 import json
@@ -13,7 +14,7 @@ import shutil
 import urllib.parse
 import xml.etree.ElementTree as etree
 import xml.dom.minidom
-from flask import Response
+from flask import Response, request
 from jinja2 import Environment, FileSystemLoader
 from types import SimpleNamespace
 
@@ -32,7 +33,6 @@ DEFAULT_NS = {
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#"}
  
 for key, value in DEFAULT_NS.items():
-    print(key, value)
     etree.register_namespace(key, value)
 
 def __create_language__(mods, lang_str):
@@ -203,9 +203,10 @@ def build_rels_ext(form, pid):
         "rdf:Description",
         attrib={"rdf:about": "info:fedora/{}".format(pid)})
     if len(form.collection_pid.data) > 0:
+        collection_resource = "info:fedora/{}".format(form.collection_pid.data)
         member_of_collection = etree.SubElement(rdf_description,
             "fedora:isMemberOfCollection",
-            attrib={"rdf:resource": form.collection_pid.data})
+            attrib={"rdf:resource": collection_resource})
     # Add FedoraObject Model
     fedora_model = etree.SubElement(rdf_description,
         "fedora-model:hasModel",
@@ -321,45 +322,6 @@ def create_mods(form):
     mods_xml = mods_xml_template.render(**mods_context)
     return mods_xml
 
-def handle_uploaded_zip(file_request,parent_pid):
-    """
-    Function takes a compressed file object from the Request
-    (should be either a .zip, .tar, .gz, or .tgz), opens
-    and extracts contents to a temp upload directory. Iterates
-    through and attempts to ingest each folder into the
-    repository. Returns a list of status for each
-    attempted ingestion.
-
-    :param file_request: File from request
-    :param parent_pid: PID of parent collection
-    :rtype: List of status from ingesting subfolders
-    """
-    statuses = []
-    zip_filepath = os.path.join(settings.MEDIA_ROOT,file_request.name)
-    zip_filename,zip_extension = os.path.splitext(file_request.name)
-    zip_destination = open(zip_filepath,"wb")
-    for chunk in file_request.chunks():
-        zip_destination.write(chunk)
-    zip_destination.close()
-    if zip_extension == ".zip":
-        import zipfile
-        new_zip = zipfile.ZipFile(zip_filepath,'r')
-    elif [".gz",".tar",".tgz"].count(zip_extension) > 0:
-        import tarfile
-        new_zip = tarfile.open(zip_filepath)
-    else:
-        raise ValueError("File {0} in handle_uploaded_zip not recognized".format(zip_filepath))
-    zip_contents = os.path.join(settings.MEDIA_ROOT,zip_filename)
-    new_zip.extractall(path=zip_contents)
-    zip_walker = next(os.walk(zip_contents))[1]
-    for folder in zip_walker:
-        full_path = os.path.join(zip_contents,folder)
-        if os.path.isdir(full_path) and not folder.startswith(".git"):
-            statuses.append(ingest_folder(full_path,parent_pid))
-        #shutil.rmtree(full_path)
-    #os.remove(zip_contents)
-    return statuses
-
 def __new_pid__(fedora_url, auth):
     pid_result = requests.post(
         "{0}new?namespace=coccc".format(fedora_url),
@@ -437,6 +399,64 @@ def create_stubs(**kwargs):
 
 def generate_stubs(**kwargs):
     return create_stubs(**kwargs)
+
+def new_fedora_object(form, config):
+    auth = config.get("FEDORA_AUTH")
+    pid = __new_pid__(config.get("REST_URL"), auth)
+    params = urllib.parse.urlencode({"label": form.title.data})
+    add_label_url = "{0}{1}?{2}".format(
+            config.get('REST_URL'),
+            pid,
+            params)
+    add_label_result = requests.put(add_label_url,
+         auth=auth)
+    # Adds MODS datastream to the new object
+    mods_xml = build_mods(form, pid)
+    params = urllib.parse.urlencode({
+        "controlGroup": "M",
+        "dsLabel": "MODS",
+        "mimeType": "text/xml"})
+    mods_url = "{0}{1}/datastreams/MODS?{2}".format(
+         config.get('REST_URL'),
+         pid,
+         params)
+    mods_ds_result = requests.post(mods_url,
+         data=mods_xml,
+         auth=auth)
+    # Adds RELS-EXT 
+    rels_ext = build_rels_ext(form, pid)
+    params = urllib.parse.urlencode({
+        "controlGroup": "M",
+        "dsLabel": "RELS-EXT",
+        "mimeType": "application/rdf+xml"})
+    rels_url = "{0}{1}/datastreams/RELS-EXT?{2}".format(
+        config.get('REST_URL'),
+        pid,
+        params)
+    rels_result = requests.post(rels_url,
+            data=rels_ext,
+            auth=auth)
+    # Adds datastream to object if not Compound Content Model type
+    if form.digital_object.data : 
+        datastream = request.files.get(form.digital_object.name)
+        if form.content_models.data.startswith("compoundCModel"):
+            pass
+        else:
+            label = bibcat.slugify(datastream.name)[0:63]
+            new_ds_url = "{}{}/datastreams/OBJ?{}".format(
+                config.get("REST_URL"),
+                pid,
+                urllib.parse.urlencode({"label": label,
+                    "controlGroup": "M",
+                    "dsLabel": datastream.name,
+                    "mimeType": datastream.mimetype}))
+            new_ds_result  = requests.post(
+                files={"content": datastream.read()},
+                auth=auth)
+    else:
+        raise ValueError("Error missing Digital Object datastream")
+    #! Need to add uploaded thumbnail
+    return pid
 
 def repository_move(source_pid,collection_pid):
     """
@@ -521,103 +541,6 @@ def load_edit_form(config, pid):
     mods_result.encoding = 'utf-8'
     mods_xml = etree.XML(mods_result.text)
     return etree.tostring(mods_xml).decode()
-
-def old_load_edit_form(config, pid):
-    mods_url = "{}{}/datastreams/MODS/content".format(
-        config.get("REST_URL"),
-        pid)
-    mods_result = requests.get(mods_url,
-        auth=config.get("FEDORA_AUTH"))
-    mods_xml = etree.XML(mods_result.text)
-    creators, contributors, thesis_advisors = [], [], []
-    for name in mods_xml.findall("mods:name[@type='personal']", DEFAULT_NS):
-        role = name.find("mods:role/mods:roleTerm", DEFAULT_NS)
-        name_part = name.find("mods:namePart", DEFAULT_NS)
-        if name_part.text is not None and len(name_part.text) > 0:
-            if role.text.startswith("creator"):
-                creators.append(name_part.text)
-            if role.text.startswith("contributor"):
-                contributors.append(name_part.text)
-            if role.text.startswith("thesis advisor"):
-                thesis_advisors.append(name_part.text)
-    corporate_creators, corporate_contributors = [], []
-    sponsor, degree_grantor = None, None
-    for name in mods_xml.findall("mods:name[@type='corporate']", DEFAULT_NS):
-        role = name.find("mods:role/mods:roleTerm", DEFAULT_NS)
-        name_part = name.find("mods:namePart", DEFAULT_NS)
-        if name_part.text is not None and len(name_part.text) > 0:
-            if role.text.startswith("creator"):
-                corporate_creators.append(name_part.text)
-            if role.text.startswith("contributor"):
-                corporate_contributors.append(name_part.text)
-            if role.text.startswith("degree grantor"):
-                degree_grantor = name_part.text
-            if role.text.startswith("sponsor"):
-                sponsor = name_part.text
-    date_created_val = mods_xml.find("mods:originInfo/mods:dateCreated",
-        DEFAULT_NS)
-    if date_created_val is None:
-        date_created = forms.DateCreatedForm()
-    else:
-        date_created = forms.DateCreatedForm()
-        date_created.process(date=date_created_val.text,
-            key_date=date_created_val.attrib.get("keyDate", "no"))
-            
-    date_issued=mods_xml.find("mods:originInfo/mods:dateIssued",
-        DEFAULT_NS)
-    if date_issued is None:
-        date_issued = forms.DateIssuedForm()
-    else:
-        date_issued = forms.DateIssuedForm(date=date_issued.text,
-            key_date=date_issued.attrib.get("keyDate", "no"))
-    type_of_resources = []
-    for row in mods_xml.findall("mods:typeOfResource", DEFAULT_NS):
-        type_of_resources.append(row.text)
-    abstract = mods_xml.find("mods:abstract", DEFAULT_NS)
-    admin_notes = []
-    for row in mods_xml.findall("mods:note[@type='admin']", DEFAULT_NS):
-        admin_notes.append(row.text)
-    degree_name, degree_type, thesis_notes = None, None, []
-    for row in mods_xml.findall("mods:note[@type='thesis']", DEFAULT_NS):
-        display_label = row.get("displayLabel")
-        if display_label is None:
-            thesis_notes.append(row.text)
-        elif "degree name" in display_label.lower():
-            degree_name = row.text
-        elif "degree type" in display_label.lower():
-            degree_type = row.text
-    extent = mods_xml.find("mods:physicalDescription/mods:extent", DEFAULT_NS)
-    publisher = mods_xml.find("mods:originInfo/mods:publisher", DEFAULT_NS)
-    publication_place = mods_xml.find(
-        "mods:originInfo/mods:place/mods:placeTerm",
-        DEFAULT_NS)
-    sub_title = mods_xml.find("mods:titleInfo/mods:subTitle", DEFAULT_NS)
-    if sub_title is None:
-        sub_title = SimpleNamespace()
-        sub_title.text = ""
-    subject_topics = []
-    for row in mods_xml.findall("mods:subject/mods:topic", DEFAULT_NS):
-        subject_topics.append(row.text)
-    edit_form = forms.EditFedoraObjectFromTemplate(
-        title=mods_xml.find("mods:titleInfo/mods:title", DEFAULT_NS).text,
-        sub_title=sub_title.text,
-        admin_notes=admin_notes,
-        abstract=abstract.text,
-        pid=pid,
-        creators=creators,
-        contributors=contributors,
-        degree_grantor=degree_grantor,
-        degree_name=degree_name,
-        degree_type=degree_type,
-        extent=extent.text,
-        publisher=publisher.text,
-        publication_place=publication_place.text,
-        sponsor=sponsor,
-        subject_topics=subject_topics,
-        thesis_advisors=thesis_advisors,
-        thesis_notes=thesis_notes,
-        type_of_resources=type_of_resources) 
-    return edit_form
 
 def save_mods_xml(config, pid, mods_xml):
     mods_url = "{}{}/datastreams/MODS?versionable=true".format(
