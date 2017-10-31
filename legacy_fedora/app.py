@@ -95,7 +95,10 @@ def add_object():
     object_form = AddFedoraObjectFromTemplate(csrf_enabled=False)
     if object_form.validate_on_submit():
         pid = new_fedora_object(object_form, app.config)
-        return jsonify({"pid": pid })
+        # Directly indexing into Digital CC Elasticsearch
+        __index_pid__(pid, 'li-docker1')
+        flash("Indexed PID {} in index {}".format(pid, search_index))
+        return redirect(url_for('index_repository'))
     else:
         return render_template("fedora_utilities/object-ingest.html",
             object_form=object_form)

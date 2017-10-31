@@ -257,6 +257,7 @@ release, distribution, manufacture, production, or origin of a resource""")
 
     subject_orgs = FieldList(StringField('Subject -- Organization'),
         description="""A name of an organization that is used as a subject.""",
+        label='Subject Organizations',
         min_entries=1)
     subject_people = FieldList(StringField('Subject -- Person'),
         description="""A name of a Person used as a subject.""",

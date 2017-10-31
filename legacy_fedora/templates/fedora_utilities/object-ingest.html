@@ -36,8 +36,9 @@
     <h3>Creators, Contributors (personal &amp; corporate)</h3>
      <div class="row">
         <section class="col-md-6">
+            <a name="creators-repeat"></a>
             <div class="form-group {% if object_form.creators.errors %}alert alert-danger{% endif %}">
-                {{ object_form.creators.label }} <a href="#" class="tag tag-primary" 
+                {{ object_form.creators.label }} <a href="#creators-repeat" class="tag tag-primary" 
                      onclick="NewInput(this, 'creators')">+</a>
                 {% for row in object_form.creators %}
                  {{ row(class_='form-control') }}
@@ -54,7 +55,8 @@
                 {% endif %}
             </div>
             <div class="form-group">
-                {{ object_form.corporate_creators.label }} <a href="#" class="tag tag-primary" 
+                <a name="creators-corporate-repeat"></a>
+                {{ object_form.corporate_creators.label }} <a href="#creators-corporate-repeat" class="tag tag-primary" 
                     onclick="NewInput(this, 'corporate_creators')">+</a>
                 {% for row in object_form.corporate_creators %}
                     {{ row(class_='form-control') }}
@@ -66,7 +68,8 @@
         </section>
         <section class="col-md-6">
             <div class="form-group">
-                {{ object_form.contributors.label }} <a href="#" class="tag tag-primary" 
+                <a name="contributors-repeat"></a>
+                {{ object_form.contributors.label }} <a href="#contributors-repeat" class="tag tag-primary" 
                      onclick="NewInput(this, 'contributors')">+</a>
                  {% for row in object_form.contributors %}
                      {{ row(class_='form-control') }}
@@ -76,7 +79,8 @@
                 </small>
             </div>
             <div class="form-group">
-                {{ object_form.corporate_contributors.label }} <a href="#" class="tag tag-primary" 
+                <a name="corporate-contributors-repeat"></a>
+                {{ object_form.corporate_contributors.label }} <a href="#corporate-contributors-repeat" class="tag tag-primary" 
                     onclick="NewInput(this, 'corporate_contributors')">+</a>
                 {% for row in object_form.corporate_contributors %}
                 {{ row(class_='form-control') }}
@@ -125,14 +129,14 @@
     <div class="row">
         <section class="col-md-6">
             <div class="form-group">
-                {{ object_form.date_created.label }}
+                {{ object_form.date_created.label }} 
                 {{ object_form.date_created(class_='form-control') }}
                 <small class="form-text text-muted">
                     {{ object_form.date_created.description }}
                 </small>
             </div>
             <div class="form-group">
-                {{ object_form.digital_origin.label }}
+                {{ object_form.digital_origin.label }} 
                 {{ object_form.digital_origin(class_='form-control') }}
                 <small class="form-text text-muted">
 	            {{ object_form.digital_origin.description }}
@@ -210,7 +214,8 @@
     <div class="row">
         <section class="col-md-6">
             <div class="form-group">
-                {{ object_form.subject_topics.label }}
+                {{ object_form.subject_topics.label }} <a href="#" class="tag tag-primary" 
+                onclick="NewInput(this, 'subject_topics')">+</a>
                 {% for row in object_form.subject_topics %}
                 {{ row(class_='form-control') }}
                 {% endfor %}
@@ -219,7 +224,8 @@
                 </small>
             </div>
             <div class="form-group">
-                {{ object_form.subject_places.label }}
+                {{ object_form.subject_places.label }} <a href="#" class="tag tag-primary" 
+                onclick="NewInput(this, 'subject_places')">+</a>
                 {% for row in object_form.subject_places %}
                 {{ row(class_="form-control") }}
                 {% endfor %}
@@ -228,7 +234,8 @@
                 </small>
             </div>
             <div class="form-group">
-               {{ object_form.subject_people.label }}
+               {{ object_form.subject_people.label }} <a href="#" class="tag tag-primary" 
+                onclick="NewInput(this, 'subject_people')">+</a>
                 {% for row in object_form.subject_people %}
                {{ row(class_="form-control") }}
                 {% endfor %}
@@ -239,7 +246,9 @@
         </section>
         <section class="col-md-6">
             <div class="form-group">
-                {{ object_form.subject_dates.label }}
+                <a name="subject-dates"></a>
+                {{ object_form.subject_dates.label }} <a href="#subject-dates" class="tag tag-primary" 
+                onclick="NewInput(this, 'subject_dates')">+</a>
                 {% for row in object_form.subject_dates %}
                 {{ row(class_="form-control") }}
                 {% endfor %}
@@ -249,7 +258,8 @@
 
             </div>
            <div class="form-group">
-                {{ object_form.subject_orgs.label }}
+                {{ object_form.subject_orgs.label }} <a href="#" class="tag tag-primary" 
+                onclick="NewInput(this, 'subject_orgs')">+</a>
                 {% for row in object_form.subject_orgs %}
                 {{ row(class_="form-control") }}
                 {% endfor %}
