@@ -450,7 +450,7 @@ def new_fedora_object(form, config):
                     "controlGroup": "M",
                     "dsLabel": datastream.name,
                     "mimeType": datastream.mimetype}))
-            new_ds_result  = requests.post(
+            new_ds_result  = requests.post(new_ds_url,
                 files={"content": datastream.read()},
                 auth=auth)
     else:
