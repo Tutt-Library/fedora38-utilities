@@ -13,7 +13,7 @@
    -moz-border-radius: 5px;
    padding: .5em;
    width: 12%;
- }
+}
 
 </style>
 {% endblock %}
@@ -50,13 +50,27 @@
   </div>
    {# START views DIV #}
    <div class="col-sm-9 col-md-10">
-   
-   <div> 
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-primary alert-dissmissible">
+            {% autoescape off %}
+            {% for message in messages %}
+            <h3>{{ message }}</h3>
+            {% endfor %}
+            {% endautoescape %}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endif %}
+   {% endwith %}
+   <div>
    <h1>Fedora 3.8 Utilities</h1>
    <h2>{% block utility_name %}{% endblock %}</h2>
-    {% if message %}
+    {# if message  %}
      <div class="alert">
       <button type="button" class="close" data-dismiss="alert">&times;</button>
+
       {% autoescape off %}
       <h3>{{ message }}</h3>
       {% endautoescape %}
@@ -64,7 +78,8 @@
     {% else %}
 	 <p>Original code migrated from Aristotle Library Apps project to Flask-based
          application in  Colorado College's Catalog Pull Platform.</p>
-    {% endif %}
+    {% endif #}
+
    </div>
    {% block fedora_form %}{% endblock %}
   {# END views DIV #}

@@ -214,7 +214,8 @@
     <div class="row">
         <section class="col-md-6">
             <div class="form-group">
-                {{ object_form.subject_topics.label }} <a href="#" class="tag tag-primary" 
+                <a name="subject-topics-a"></a>
+                {{ object_form.subject_topics.label }} <a href="#subject-topics-a" class="tag tag-primary" 
                 onclick="NewInput(this, 'subject_topics')">+</a>
                 {% for row in object_form.subject_topics %}
                 {{ row(class_='form-control') }}
@@ -224,7 +225,8 @@
                 </small>
             </div>
             <div class="form-group">
-                {{ object_form.subject_places.label }} <a href="#" class="tag tag-primary" 
+                <a name="subject-places-a"></a>
+                {{ object_form.subject_places.label }} <a href="#subject-places-a" class="tag tag-primary" 
                 onclick="NewInput(this, 'subject_places')">+</a>
                 {% for row in object_form.subject_places %}
                 {{ row(class_="form-control") }}
@@ -234,7 +236,8 @@
                 </small>
             </div>
             <div class="form-group">
-               {{ object_form.subject_people.label }} <a href="#" class="tag tag-primary" 
+                <a name="subject-people-a"></a>
+               {{ object_form.subject_people.label }} <a href="#subject-people-a" class="tag tag-primary" 
                 onclick="NewInput(this, 'subject_people')">+</a>
                 {% for row in object_form.subject_people %}
                {{ row(class_="form-control") }}
@@ -258,7 +261,8 @@
 
             </div>
            <div class="form-group">
-                {{ object_form.subject_orgs.label }} <a href="#" class="tag tag-primary" 
+                <a name="subject-organizations"></a>
+                {{ object_form.subject_orgs.label }} <a href="#subject-organizations" class="tag tag-primary" 
                 onclick="NewInput(this, 'subject_orgs')">+</a>
                 {% for row in object_form.subject_orgs %}
                 {{ row(class_="form-control") }}
@@ -336,8 +340,10 @@
 {% block more_js %}
 <script>
     function NewInput(btn, field_id) {
-        var last_field = $(btn).prev();
-        last_field.after("<br><input name='" + field_id + "' type='text', class='form-control'></input>");
+        var last_field = $(btn).next();
+        var parent_elem = $(btn).parent();
+        var field_name = field_id + "-" + $(parent_elem).find("input").length ;
+        last_field.after("<br><input id='" + field_name + "' name='" + field_name + "' type='text', class='form-control'></input>");
     }
 
 </script>
