@@ -294,7 +294,7 @@
                 {% for error in object_form.collection_pid.errors %}
                      ERROR: {{ error }}
                 {% endfor %}
-                {{ object_form.collection_pid.label }}
+                {{ object_form.collection_pid.label }}<sup>*</sup>
                 {{ object_form.collection_pid(class_='form-control') }}
                 <small class="form-text text-muted">
                  {{ object_form.collection_pid.description }}   
