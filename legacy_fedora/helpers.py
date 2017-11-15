@@ -437,11 +437,11 @@ def new_fedora_object(form, config):
             data=rels_ext,
             auth=auth)
     # Adds datastream to object if not Compound Content Model type
-    if form.digital_object.data : 
-        datastream = request.files.get(form.digital_object.name)
-        if form.content_models.data.startswith("compoundCModel"):
+    if form.digital_object.data is not None: 
+        if form.content_models.data.startswith("islandora:compoundCModel"):
             pass
         else:
+            datastream = request.files.get(form.digital_object.name)
             label = bibcat.slugify(datastream.name)[0:63]
             new_ds_url = "{}{}/datastreams/OBJ?{}".format(
                 config.get("REST_URL"),
