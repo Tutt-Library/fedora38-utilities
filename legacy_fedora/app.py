@@ -230,18 +230,21 @@ def mods_replacement():
         if collection_pid is not None and len(collection_pid) > 0:
             pid_listing = get_collection_pids(app.config, collection_pid)
         for pid in pid_listing:
-            future = executor.submit(update_mods,
-                app=app,
+            update_mods(app=app,
                 pid=pid,
                 xpath=xpath,
                 old=old_value,
                 new=new_value)
+        # Kludge to allow changes to propagate through Fedora
+        time.sleep(10)
+        print("Finished updating all Fedora Objects, trying to index now")
+        for pid in pid_listing:
             __index_pid__(search_index, pid)
-            flash("Replaces {} old {} with {} for pid {}".format(
-                xpath,
-                old_value,
-                new_value,
-                pid))
+        flash("Replaces {} old {} with {} for pid {}".format(
+            xpath,
+            old_value,
+            new_value,
+            pid_listing))
                    #return jsonify({"total": len(pid_listing)})
         return redirect(url_for('mods_replacement'))
     return render_template('fedora_utilities/mods-replacement.html',

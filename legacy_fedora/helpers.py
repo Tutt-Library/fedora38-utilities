@@ -30,7 +30,8 @@ DEFAULT_NS = {
     "islandora": "http://islandora.ca/ontology/relsext#", 
     "oai_dc": "http://www.openarchives.org/OAI/2.0/oai_dc/", 
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#", 
-    "rdfs": "http://www.w3.org/2000/01/rdf-schema#"}
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#"
+}
  
 for key, value in DEFAULT_NS.items():
     etree.register_namespace(key, value)
@@ -284,9 +285,6 @@ def create_mods(form):
         if not row is None and len(row) > 0:
             mods_context['subject_topics'].append(row)
     type_res = form.getlist("type_of_resources")
-    for key in form.keys():
-        print("{}={}".format(key, form.get(key)))
-    print("Type of Resources {}".format(type_res))
     for row in type_res:
         if len(row) > 0:
             mods_context['typeOfResource'].append(row)

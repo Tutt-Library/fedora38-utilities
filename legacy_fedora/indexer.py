@@ -161,12 +161,15 @@ WHERE {{
 	          "format": "json",
 	          "query": sparql},
 	    auth=self.auth)
-        results = result.json().get('results')
-        if len(results) < 1:
+        if result.status_code < 400:
+            results = result.json().get('results')
+            if len(results) < 1:
+                return []
+            if len(results) == 1:
+                parent_pid = results[0]['s'].split("/")[-1]
+                return [parent_pid,] + self.__get_ancestry__(parent_pid)
+        else:
             return []
-        if len(results) == 1:
-            parent_pid = results[0]['s'].split("/")[-1]
-            return [parent_pid,] + self.__get_ancestry__(parent_pid)
 
 
     def __index_compound__(self, pid):

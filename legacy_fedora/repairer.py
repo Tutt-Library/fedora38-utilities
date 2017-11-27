@@ -47,10 +47,9 @@ def update_mods(**kwargs):
     start = datetime.datetime.utcnow()
     rest_url = kwargs.get("rest_url", app.config.get("REST_URL"))
     auth = kwargs.get("auth", app.config.get("FEDORA_AUTH"))
-    backup = kwargs.get("backup", True)
     mods_base_url = "{}{}/datastreams/MODS".format(
         rest_url,
-        pid)
+        pid.strip())
     get_mods_url = "{}/content".format(mods_base_url)
     mods_result = requests.get(
         get_mods_url,
@@ -62,7 +61,7 @@ error={} url={}""".format(
             new_value, 
             pid,
             mods_result.status_code,
-            mods_url)
+            get_mods_url)
     raw_xml = mods_result.text
     mods_xml = etree.XML(raw_xml)
     old_value_elements = mods_xml.findall(field_xpath, {"mods": str(MODS)})
@@ -71,9 +70,8 @@ error={} url={}""".format(
             element.text = new_value
     url_params = {"controlGroup": "M",
         "dsLabel": "MODS",
-        "mimeType": "text/xml"}
-    if backup is True:
-        url_params["versionable"] = "true"
+        "mimeType": "text/xml",
+        "versionable": "true"}
     mods_update_url = "{}?{}".format(
         mods_base_url,
         urllib.parse.urlencode(url_params))
