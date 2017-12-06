@@ -222,9 +222,9 @@ def build_rels_ext(form, pid):
         constituent_of = etree.SubElement(rdf_description,
             "fedora:isConstituentOf",
             attrib={"rdf:resource": constituent_str})
-    if len(form.ordering.data) > 0:
+    if len(form.ordering.data) > 0 and len(form.parent_pid.data) > 0:
         sequence_number = etree.SubElement(rdf_description,
-            "islandora:isSequenceNumberOf{}".format(pid.replace(":", "_")))
+            "islandora:isSequenceNumberOf{}".format(form.parent_pid.data.replace(":", "_")))
         sequence_number.text = str(int(form.ordering.data))
     reparsed = xml.dom.minidom.parseString(
         etree.tostring(rels_ext, "unicode"))
