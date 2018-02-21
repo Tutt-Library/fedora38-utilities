@@ -124,14 +124,14 @@ def __create_subjects__(form, mods):
 
        
 
-def __create_title__(mods, form):
+def __create_title__(mods, form, alt=False):
     title_info = etree.SubElement(mods,
         "mods:titleInfo")
     title = etree.SubElement(title_info,
         "mods:title")
     main_title = form.title
-    alt_title = form.alt_title
-    if len(alt_title.data) > 0:
+    if alt is True:
+        alt_title = form.alt_title
         title_info.attrib["type"] = "alternative"
         title.text = alt_title.data
     else: 
@@ -167,7 +167,7 @@ def build_mods(form, pid=None):
     for row in form.type_of_resources.data:
         __create_type_of_resource__(mods, row)
     if len(form.alt_title.data) > 0:
-        __create_title__(mods, form)
+        __create_title__(mods, form, True)
     for row in form.creators.data:
         __create_name__(mods, row, "personal", "creator")
     for row in form.contributors.data:
