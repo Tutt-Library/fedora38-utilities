@@ -5,76 +5,76 @@ MAP = {"mappings": {
     "mods": {
         "properties": {
             "abstract": {
-                "type": "string"
+                "type": "text"
             },
             "adminNote": {
-                "type": "string"
+                "type": "text"
             },
             "content_models": {
-              "index": "not_analyzed",
-                       "type": "string"
+              "index": "false",
+                       "type": "text"
             },
             "contributor": {
-                "type": "string"
+                "type": "text"
             },
             "creator": {
-                "type": "string"
+                "type": "text"
             },
             "datastreams": {
                "properties": {
                        "dsid": {
-                           "index": "not_analyzed",
-                           "type": "string"
+                           "index": "false",
+                           "type": "text"
                        },
 					   "label": {
-                           "index": "not_analyzed",
-                           "type": "string"
+                           "index": "false",
+                           "type": "text"
                        },
                        "mimeType": {
-                           "index": "not_analyzed",
-                           "type": "string"
+                           "index": "false",
+                           "type": "text"
                        }
                 }
             },
             "dateCreated": {
-               "index": "not_analyzed",
-                "type": "string"
+               "index": "false",
+                "type": "text"
             },
             "dateIssued": {
-                "type": "string"
+                "type": "text"
             },
             "datePublished": {
-                "index": "not_analyzed",
-                "type": "string"
+                "index": "false",
+                "type": "text"
 	    },
             "degreeGrantor": {
-                "type": "string"
+                "type": "text"
             },
             "degreeName": {
-                "type": "string"
+                "type": "text"
             },
             "degreeType": {
-                "type": "string"
+                "type": "text"
             },
             "digitalOrigin": {
-                "type": "string"
+                "type": "text"
             },
             "extent": {
-                "type": "string"
+                "type": "text"
             },
             "genre": {
-                "index": "not_analyzed",
-                "type": "string"
+                "index": "false",
+                "type": "text"
             },
             "handle": {
-                "type": "string"
+                "type": "text"
             },
             "inCollections": {
-                "index": "not_analyzed",
-                "type": "string"
+                "index": "false",
+                "type": "text"
             },
             "language": {
-                "type": "string",
+                "type": "text",
                 "fields": {
                     "keyword": {
                         "type":"keyword"
@@ -82,64 +82,64 @@ MAP = {"mappings": {
                 }
             },
             "note": {
-                "type": "string"
+                "type": "text"
             },
             "parent": {
-                "index": "not_analyzed",
-                "type": "string"
+                "index": "false",
+                "type": "text"
             },
             "photographer": {
-                "type": "string"
+                "type": "text"
             },
 
             "pid": {
-                "index": "not_analyzed",
-                "type": "string"
+                "index": "false",
+                "type": "text"
             },
             "place": {
-                "type": "string"
+                "type": "text"
             },
             "publisher": {
-                "type": "string"
+                "type": "text"
             },
             "publicationYear": {             
-                "index": "not_analyzed",
-                "type": "string"
+                "index": "false",
+                "type": "text"
             },
             "sponsor": {
-                "type": "string"
+                "type": "text"
             },
             "subject": {
                 "properties": {
                     "genre": {
-			"index": "not_analyzed",
-                        "type": "string"
+			"index": "false",
+                        "type": "text"
                     },
                     "geographic": {
-		        "index": "not_analyzed",
-                        "type": "string"
+		        "index": "false",
+                        "type": "text"
                     },
                     "temporal": {
-		        "index": "not_analyzed",
-                        "type": "string"
+		        "index": "false",
+                        "type": "text"
                     },
                     "topic": {
-			"index": "not_analyzed",
-                        "type": "string"
+			"index": "false",
+                        "type": "text"
                     }
                 }
             },
             "thesis": {
-                "type": "string"
+                "type": "text"
             },
             "thesisAdvisor": {
-                "type": "string"
+                "type": "text"
             },
             "titleAlternative": {
-                "type": "string"
+                "type": "text"
             },
             "titlePrincipal": {
-                "type": "string",
+                "type": "text",
                 "fields": {
                     "keyword": {
                         "type": "keyword"
@@ -148,15 +148,15 @@ MAP = {"mappings": {
 
             },
             "titleRaw": {
-                "type": "string",
-                "index": "not_analyzed"
+                "type": "text",
+                "index": "false"
             },
             "typeOfResource": {
-                "index": "not_analyzed",
-                "type": "string"
+                "index": "false",
+                "type": "text"
             },
             "useAndReproduction": {
-                "type": "string"
+                "type": "text"
             }
             }
         }

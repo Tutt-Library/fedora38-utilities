@@ -74,6 +74,9 @@ class Indexer(object):
             self.elastic = app.config.get('ELASTIC_SEARCH')
         if not isinstance(self.elastic, Elasticsearch):
             self.elastic = Elasticsearch(hosts=self.elastic)
+        self.islandora_url = kwargs.get("islandora_url")
+        if app and self.islandora_url is None:
+            self.islandora_url = app.config.get("ISLANDORA_URL")
         self.logger = logging.getLogger(__file__)
         self.messages = []
         self.rest_url = kwargs.get("rest_url")
@@ -225,7 +228,10 @@ WHERE {{
             ISLANDORA,
 			parent_pid.replace(":","_"))
         sequence_number = rels_ext.find(xpath)
-        order = sequence_number.text
+        if sequence_number is not None:
+            order = sequence_number.text
+        else:
+            order = "-1"
         datastreams = self.__add_datastreams__(pid)
         for datastream in datastreams:
             datastream['order'] = order
@@ -375,6 +381,14 @@ WHERE {{
         # Skip and don't index if pid is a constituent of another compound 
 		# object
         if is_constituent is not None:
+            return False
+        # Quick check to see Islandora is available, skip if error code
+        # is 403 Access Denied
+        islandora_url = "{}{}".format(self.islandora_url,
+                                      pid)
+        islandora_result = requests.get(islandora_url)
+        if islandora_result.status_code == 403:
+            logging.info("Access denied {}".format(pid))
             return False
         # Extract MODS XML Datastream
         mods_url = "{}{}/datastreams/MODS/content".format(
