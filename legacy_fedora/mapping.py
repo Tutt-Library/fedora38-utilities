@@ -11,7 +11,7 @@ MAP = {"mappings": {
                 "type": "text"
             },
             "content_models": {
-              "index": "false",
+              # "index": "false",
                        "type": "text"
             },
             "contributor": {
@@ -23,28 +23,28 @@ MAP = {"mappings": {
             "datastreams": {
                "properties": {
                        "dsid": {
-                           "index": "false",
+                           # "index": "false",
                            "type": "text"
                        },
 					   "label": {
-                           "index": "false",
+                           # "index": "false",
                            "type": "text"
                        },
                        "mimeType": {
-                           "index": "false",
+                           # "index": "false",
                            "type": "text"
                        }
                 }
             },
             "dateCreated": {
-               "index": "false",
+               # "index": "false",
                 "type": "text"
             },
             "dateIssued": {
                 "type": "text"
             },
             "datePublished": {
-                "index": "false",
+                # "index": "false",
                 "type": "text"
 	    },
             "degreeGrantor": {
@@ -63,15 +63,19 @@ MAP = {"mappings": {
                 "type": "text"
             },
             "genre": {
-                "index": "false",
-                "type": "text"
+             #   # "index": "false",
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword"
+                    }
+                }
             },
             "handle": {
                 "type": "text"
             },
             "inCollections": {
-                "index": "false",
-                "type": "text"
+                "type": "keyword"
             },
             "language": {
                 "type": "text",
@@ -85,16 +89,25 @@ MAP = {"mappings": {
                 "type": "text"
             },
             "parent": {
-                "index": "false",
-                "type": "text"
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword"
+                    }
+                }
             },
             "photographer": {
                 "type": "text"
             },
 
             "pid": {
-                "index": "false",
-                "type": "text"
+               # # "index": "false",
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword"
+                    }
+                }
             },
             "place": {
                 "type": "text"
@@ -103,8 +116,13 @@ MAP = {"mappings": {
                 "type": "text"
             },
             "publicationYear": {             
-                "index": "false",
-                "type": "text"
+             #   # "index": "false",
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword"
+                    }
+                }
             },
             "sponsor": {
                 "type": "text"
@@ -112,20 +130,42 @@ MAP = {"mappings": {
             "subject": {
                 "properties": {
                     "genre": {
-			"index": "false",
-                        "type": "text"
+			# "index": "false",
+                        "type": "text",
+                        "fields": {
+                            "keyword": {
+                                "type": "keyword"
+                            }
+                        }
                     },
                     "geographic": {
-		        "index": "false",
-                        "type": "text"
+		        # "index": "false",
+                        "type": "text",
+                        "fields": {
+                            "keyword": {
+                                "type": "keyword"
+                            }
+                        }
+
                     },
                     "temporal": {
-		        "index": "false",
-                        "type": "text"
+		        # "index": "false",
+                        "type": "text",
+                        "fields": {
+                            "keyword": {
+                                "type": "keyword"
+                            }
+                        }
+
                     },
                     "topic": {
-			"index": "false",
-                        "type": "text"
+			# "index": "false",
+                        "type": "text",
+                        "fields": {
+                            "keyword": {
+                                "type": "keyword"
+                            }
+                        }
                     }
                 }
             },
@@ -152,8 +192,13 @@ MAP = {"mappings": {
                 "index": "false"
             },
             "typeOfResource": {
-                "index": "false",
-                "type": "text"
+                # "index": "false",
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword"
+                    }
+                }
             },
             "useAndReproduction": {
                 "type": "text"

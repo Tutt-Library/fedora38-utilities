@@ -115,6 +115,7 @@ GENRE = [('choose', 'Choose...'),
          
 
 CONTENT_MODELS = [('islandora:sp_basic_image', 'Basic Image Content Model'),
+                  ('islandora:sp_document', 'Basic Document Model'),
                   ('islandora:sp_pdf', 'PDF Content Model'),
                   ('islandora:compoundCModel', 'Compound Object Content Model'),
                   ('islandora:sp-audioCModel', 'Audio Content Model'),
