@@ -432,7 +432,7 @@ WHERE {{
         # Delete any existing document for the pid
         delete_existing_dsl = {
             "query": {
-                "term": {"pid": pid}
+                "term": {"pid.keyword": pid}
             }
         }
         self.elastic.delete_by_query(body=delete_existing_dsl,
