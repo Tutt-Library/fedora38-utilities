@@ -119,7 +119,13 @@ var modsSpec = {
                     caption: "Add <note>",
                     action: Xonomy.newElementChild,
                     actionParameter: "<mods:note xmlns:mods='http://www.loc.gov/mods/v3'></mods:note>"
-                },{
+                },
+                {
+                    caption: "Add <originInfo>",
+                    action: Xonomy.newElementChild,
+                    actionParameter: "<mods:originInfo xmlns:mods='http://www.loc.gov/mods/v3'><mods:place /><mods:publisher /><mods:dateIssued /><mods:dateCreated /><mods:dateCaptured /><mods:dateValid /><mods:dateModified /><mods:copyrightDate /><mods:dateOther /><mods:edition /><mods:issuance /><mods:frequency /></mods:originInfo>"
+                },
+                {
                     caption: "Add <physicalDescription>",
                     action: Xonomy.newElementChild,
                     actionParameter: "<mods:physicalDescription xmlns:mods='http://www.loc.gov/mods/v3'/>"
@@ -174,6 +180,55 @@ var modsSpec = {
                 }
             }
         },
+        "mods:copyrightDate": {
+            menu: [{
+                caption: "Add @keydate",
+                action: Xonomy.newAttribute,
+                actionParameter: { name: "keyDate", value: "no"}
+            },{
+                caption: "Delete <copyrightDate>",
+                action: Xonomy.deleteElement
+            }],
+            hasText: true,
+            attributes: {
+                "keyDate": {
+                    asker: Xonomy.askPicklist,
+                    askerParameter: [
+                        "yes",
+                        "no"
+                    ]
+                }
+            }
+  
+        },
+        "mods:edition": {
+            menu: [{
+                caption: "Delete <edition>",
+                action: Xonomy.deleteElement
+            }],
+            hasText: true
+        },
+
+        "mods:dateCaptured": {
+            menu: [{
+                caption: "Add @keydate",
+                action: Xonomy.newAttribute,
+                actionParameter: { name: "keyDate", value: "no"}
+            },{
+                caption: "Delete <dateCaptured>",
+                action: Xonomy.deleteElement
+            }],
+            hasText: true,
+            attributes: {
+                "keyDate": {
+                    asker: Xonomy.askPicklist,
+                    askerParameter: [
+                        "yes",
+                        "no"
+                    ]
+                }
+            }
+        },
         "mods:dateCreated": {
             menu: [{
                 caption: "Add @keydate",
@@ -190,7 +245,13 @@ var modsSpec = {
                     askerParameter: [
                         "yes",
                         "no"
+                    ],
+                    menu: [{
+                        caption: "Delete @keyDate",
+                        action: Xonomy.deleteAttribute
+                    }
                     ]
+
                 }
             }
         },
@@ -220,8 +281,113 @@ var modsSpec = {
                 }
             }
         },
+        "mods:dateModified": {
+            menu: [{
+                caption: "Add @keydate",
+                action: Xonomy.newAttribute,
+                actionParameter: { name: "keyDate", value: "no"}
+            },{
+                caption: "Delete <dateModified>",
+                action: Xonomy.deleteElement
+            }],
+            hasText: true,
+            attributes: {
+                "keyDate": {
+                    asker: Xonomy.askPicklist,
+                    askerParameter: [
+                        "yes",
+                        "no"
+                    ],
+                   menu: [{
+                        caption: "Delete @keyDate",
+                        action: Xonomy.deleteAttribute
+                    }
+                    ]
+               
+                }
+            }
+        },
+        "mods:dateOther": {
+            menu: [{
+                caption: "Add @keydate",
+                action: Xonomy.newAttribute,
+                actionParameter: { name: "keyDate", value: "no"}
+            },{
+                caption: "Delete <dateOther>",
+                action: Xonomy.deleteElement
+            }],
+            hasText: true,
+            attributes: {
+                "keyDate": {
+                    asker: Xonomy.askPicklist,
+                    askerParameter: [
+                        "yes",
+                        "no"
+                    ],
+                   menu: [{
+                        caption: "Delete @keyDate",
+                        action: Xonomy.deleteAttribute
+                    }
+                    ]
+               
+                }
+            }
+        },
 
-        "mods:genre": {
+        "mods:dateValid": {
+            menu: [{
+                caption: "Add @keydate",
+                action: Xonomy.newAttribute,
+                actionParameter: { name: "keyDate", value: "no"}
+            },{
+                caption: "Delete <dateValid>",
+                action: Xonomy.deleteElement
+            }],
+            hasText: true,
+            attributes: {
+                "keyDate": {
+                    asker: Xonomy.askPicklist,
+                    askerParameter: [
+                        "yes",
+                        "no"
+                    ],
+                   menu: [{
+                        caption: "Delete @keyDate",
+                        action: Xonomy.deleteAttribute
+                    }
+                    ]
+               
+                }
+            }
+        },
+        "mods:frequency": {
+            hasText: true,
+            menu: [{
+                caption: "Delete <frequency>",
+                action: Xonomy.deleteElement
+            }],
+            asker: Xonomy.askPicklist,
+            askerParameter: [
+                "Continuously updated",
+                "Daily",
+                "Semiweekly",
+                "Three times a week",
+                "Weekly",
+                "Biweekly",
+                "Three times a month",
+                "Semimonthly",
+                "Monthly",
+                "Bimonthly",
+                "Quarterly",
+                "Three times a year",
+                "Semiannual",
+                "Annual",
+                "Biennial",
+                "Triennial",
+                "Completely irregular"
+            ] 
+        },
+       "mods:genre": {
             hasText: true,
             menu: [{
                 caption: "Delete <genre>",
@@ -356,6 +522,22 @@ var modsSpec = {
                 }
             }
         },
+        "mods:issuance": {
+            hasText: true,
+            menu: [{
+                caption: "Delete <issuance>",
+                action: Xonomy.deleteElement
+            }],
+            asker: Xonomy.askPicklist,
+            askerParameter: [
+                "monographic",
+                "single unit", 
+                "multipart monograph",
+                "continuing",
+                "serial",
+                "integrating resource" 
+            ]
+        },
         "mods:name": {
             menu: [{
                     caption: "Append an <namePart>",
@@ -474,7 +656,18 @@ var modsSpec = {
             hasText: true
         },
         "mods:originInfo": {
-            menu: [{
+            menu: [
+            {
+                caption: "Add <copyrightDate>",
+                action: Xonomy.newElementChild,
+                actionParameter: "<mods:copyrightDate xmlns:mods='http://www.loc.gov/mods/v3'/>"
+            },
+            {
+                caption: "Add <dateCaptured>",
+                action: Xonomy.newElementChild,
+                actionParameter: "<mods:dateCaptured xmlns:mods='http://www.loc.gov/mods/v3'/>"
+            },
+            {
                 caption: "Add <dateCreated>",
                 action: Xonomy.newElementChild,
                 actionParameter: "<mods:dateCreated xmlns:mods='http://www.loc.gov/mods/v3'/>"
@@ -482,7 +675,23 @@ var modsSpec = {
                 caption: "Add <dateIssued>",
                 action: Xonomy.newElementChild,
                 actionParameter: "<mods:dateIssued  xmlns:mods='http://www.loc.gov/mods/v3'/>"
-            },{
+            },
+            {
+                caption: "Add <dateOther>",
+                action: Xonomy.newElementChild,
+                actionParameter: "<mods:dateOther  xmlns:mods='http://www.loc.gov/mods/v3'/>"
+            },
+            {
+                caption: "Add <edition>",
+                action: Xonomy.newElementChild,
+                actionParameter: "<mods:edition  xmlns:mods='http://www.loc.gov/mods/v3'/>"
+            },
+            {
+                caption: "Add <frequency>",
+                action: Xonomy.newElementChild,
+                actionParameter: "<mods:frequency  xmlns:mods='http://www.loc.gov/mods/v3'/>"
+            },
+            {
                 caption: "Add <publisher>",
                 action: Xonomy.newElementChild,
                 actionParameter: "<mods:publisher xmlns:mods='http://www.loc.gov/mods/v3'/>"
