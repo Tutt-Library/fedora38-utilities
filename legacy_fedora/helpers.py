@@ -545,7 +545,7 @@ def save_mods_xml(config, pid, mods_xml):
         config.get("REST_URL"),
         pid)
     result = requests.put(mods_url,
-        data=mods_xml,
+        data=mods_xml.encode('utf-8'),
         auth=config.get("FEDORA_AUTH"))
     if result.status_code > 399:
         raise ValueError("Failed to save MODS XML for {}".format(pid))

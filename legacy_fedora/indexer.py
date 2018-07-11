@@ -9,6 +9,7 @@ an ElasticSearch instance either by PID or by Collection.
 """
 __author__ = "Jeremy Nelson"
 
+import click
 import datetime
 import logging
 import os
@@ -521,6 +522,7 @@ WHERE {{
             (end-started).seconds / 60.0)
         self.logger.info(msg)
         self.messages.append(msg)
+        click.echo(msg)
 
     def reset(self):
         """Deletes existing repository index and reloads Map"""

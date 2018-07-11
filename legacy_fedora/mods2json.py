@@ -293,9 +293,7 @@ def title2rdf(mods):
        mods -- MODS etree XML document
     """
     output = {}
-    click.echo("mods: {0}, namespace {1}".format(mods, MODS_NS))
     titles = mods.findall("mods:titleInfo", MODS_NS)
-    click.echo("title2rdf titles are {}".format(titles))
     for row in titles:
         title = row.find("mods:title", MODS_NS)
         type_of = row.attrib.get("type", "")
