@@ -1,3 +1,4 @@
+#!/home/libraryadmin/py3-env/bin/python
 """Command-line tool for indexing Fedora 3.8 repository into Elasticsearch"""
 __author__ = "Jeremy Nelson"
 
@@ -17,24 +18,15 @@ class StubApp(object):
 
 if __name__ == "__main__":
     start = datetime.datetime.utcnow()
-    print("Started indexing at {}".format(start))
-    print("""Please select server to run indexer
-1) li-docker1 (default) -- Production Elasticsearch
-2) li-testdocker1 -- Test Elasticsearch""")
-    server_choice = input(">>")
-    if server_choice.startswith("2"):
-        server = "li-docker1"
-    else:
-        server = "li-testdocker1"
+    print("Started indexing at {}".format(start,
+        start))
     app = StubApp(config)
-    indexer = Indexer(app=app,
-        elasticsearch=server)
+    indexer = Indexer(app=app)
     indexer.reset()
     indexer.index_collection(
         app.config.get("INITIAL_PID"))
     finished = datetime.datetime.utcnow()
-    print("Finished indexing {} at {}, total time: {:,} minutes".format(
+    print("Finished indexing at {}, total time: {:,} minutes".format(
         finished,
-        server,
         (finished-start).second / 60.0))
     
