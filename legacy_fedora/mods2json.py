@@ -104,7 +104,7 @@ def names2rdf(mods):
     output = {}
     for row in names:
         name = row.find("mods:namePart", MODS_NS)
-        if hasattr(name, "text") and name.text is None:
+        if name is None or (hasattr(name, "text") and name.text is None):
             continue
         roleTerm = row.find("mods:role/mods:roleTerm", MODS_NS)
         if roleTerm is not None and hasattr(roleTerm, "text"):
