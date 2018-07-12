@@ -28,5 +28,5 @@ if __name__ == "__main__":
     finished = datetime.datetime.utcnow()
     print("Finished indexing at {}, total time: {:,} minutes".format(
         finished,
-        (finished-start).second / 60.0))
+        (finished-start).seconds / 60.0))
     
